@@ -3,7 +3,7 @@
 A zombie-apocalypse survival decision game that runs in the browser, in **English and Hebrew** (with full right-to-left support).
 Pick a country, a past and an age, then decide how to live through the end of the world. Every choice is a coin flip with visible odds, and every choice changes both you and the world.
 
-**Play it:** `https://YOUR-USERNAME.github.io/days-after/`
+**Play it:** https://lobby1995.github.io/The_Day_After/
 
 ## Features
 
