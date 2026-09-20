@@ -3,7 +3,7 @@
   "version": "4.0.0",
   "description": "A zombie-apocalypse survival decision game in the browser, in English and Hebrew.",
   "private": true,
-  "license": "MIT",
+  "license": "UNLICENSED",
   "engines": { "node": ">=18" },
   "scripts": {
     "build": "node scripts/build.js",

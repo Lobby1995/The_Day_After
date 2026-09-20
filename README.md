@@ -80,4 +80,4 @@ Inspired by the format of [legionnaire.xyz](https://legionnaire.xyz). All code, 
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+Copyright (c) 2026 iskv. All rights reserved. See [LICENSE](LICENSE).
