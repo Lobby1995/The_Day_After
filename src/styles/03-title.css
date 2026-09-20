@@ -1,0 +1,22 @@
+/* title */
+.hero{display:grid;gap:26px;padding:1vh 0 0}
+.langrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.mega{display:flex;flex-direction:column;font-family:var(--f-head);font-weight:400;text-transform:uppercase;font-size:clamp(4.4rem,17vw,11rem);line-height:.98;color:var(--text);text-shadow:0 4px 0 #000,0 0 40px rgba(194,120,3,.22)}
+.mega span:last-child{color:var(--accent)}
+:lang(he) .mega{font-weight:700;font-size:clamp(3.6rem,15vw,9rem);line-height:1.05}
+.tape{height:22px;background:repeating-linear-gradient(-45deg,var(--accent) 0 20px,#141110 20px 40px);border:2px solid #000;opacity:.85;border-radius:2px}
+.lede{font-size:clamp(1.05rem,2.2vw,1.3rem);max-width:44ch;color:var(--text)}
+.roadH{font-size:1.5rem;color:var(--text);letter-spacing:.06em;text-transform:uppercase}
+.roads{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.road{position:relative;display:flex;flex-direction:column;gap:8px;text-align:start;padding:22px 20px 20px;background:var(--surface);border:2px solid var(--primary);border-radius:4px;box-shadow:0 10px 24px rgba(0,0,0,.5);transition:border-color .2s,transform .2s}
+.road:hover{border-color:var(--accent);transform:translateY(-2px)}
+.road .rtag{position:absolute;top:0;inset-inline-end:0;background:var(--primary);color:var(--text);font-family:var(--f-head);font-size:.68rem;letter-spacing:.14em;padding:3px 12px;border-end-start-radius:4px}
+.road .num{font-size:2.2rem;line-height:1.1;color:var(--text)}
+.road .rt{font-family:var(--f-head);font-weight:var(--hw);color:var(--accent);font-size:.9rem;letter-spacing:.12em;text-transform:uppercase}
+.road .rd{color:var(--muted);font-size:.9rem}
+.row{display:flex;flex-wrap:wrap;gap:12px}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:8px}
+.rules div{padding:16px 18px;background:var(--surface);border-inline-start:4px solid var(--accent);border-radius:2px}
+.rules b{display:block;font-family:var(--f-head);font-weight:var(--hw);font-size:1.02rem;margin-bottom:6px;color:var(--text)}
+.rules span{color:var(--muted);font-size:.9rem}
+

@@ -1,0 +1,30 @@
+/* situation line, trend arrows, trophies, toasts */
+.sit{margin:-4px 0 16px;padding-inline-start:12px;border-inline-start:3px solid var(--primary);color:var(--secondary);font-style:italic;font-size:.92rem;line-height:1.5}
+.tr{display:inline-block;margin-inline-start:8px;font-size:.72em;font-family:var(--f-head);font-weight:600}
+.tr.good{color:var(--secondary)}.tr.bad{color:var(--accent)}
+.troom{max-width:1000px;margin:0 auto}
+.tfacts{grid-template-columns:repeat(3,1fr)}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.tgrid.tsm{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+.tcard{padding:14px 16px;background:var(--surface);border:2px solid var(--border);border-inline-start:6px solid var(--border);border-radius:4px}
+.tcard .thead{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.tcard .thead b{font-family:var(--f-head);font-size:1rem}
+.tcard p{margin:0 0 8px;color:var(--muted);font-size:.88rem;line-height:1.45}
+.tcard small{color:var(--muted);font-size:.74rem}
+.tierb{display:inline-block;min-width:24px;padding:1px 7px;border:1px solid var(--border);border-radius:2px;font-size:.68rem;font-family:var(--f-head);text-align:center;color:var(--muted)}
+.tcard.lock{opacity:.5}
+.tcard.got{border-color:var(--secondary)}
+.tcard.got .tierb{color:var(--text);border-color:var(--secondary)}
+.tcard.bronze{border-inline-start-color:var(--secondary)}
+.tcard.silver{border-inline-start-color:var(--muted)}
+.tcard.gold{border-inline-start-color:var(--accent)}
+.tcard.platinum{border-inline-start-color:var(--text);box-shadow:0 0 0 1px var(--primary-hover) inset}
+.tcard.got.gold .tierb{color:var(--accent);border-color:var(--accent)}
+#toasts{position:fixed;z-index:60;bottom:16px;inset-inline-end:16px;display:flex;flex-direction:column;gap:8px;max-width:min(340px,calc(100vw - 32px));pointer-events:none}
+.toast{background:var(--surface);border:2px solid var(--border);border-inline-start:6px solid var(--accent);padding:10px 14px;border-radius:4px;box-shadow:0 10px 24px rgba(0,0,0,.55);animation:pop .3s ease;transition:opacity .5s,transform .5s}
+.toast.tro{border-inline-start-color:var(--primary-hover)}
+.toast small{display:block;font-family:var(--f-head);font-size:.68rem;color:var(--secondary);text-transform:uppercase;letter-spacing:.08em}
+.toast b{display:block;font-family:var(--f-head);font-size:1.02rem;margin:2px 0}
+.toast span{display:block;color:var(--muted);font-size:.82rem}
+.toast.out{opacity:0;transform:translateY(8px)}
+@media(max-width:560px){.tfacts{grid-template-columns:1fr 1fr 1fr}.tfacts .fact b{font-size:1.4rem}}
