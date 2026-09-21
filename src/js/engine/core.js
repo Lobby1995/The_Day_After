@@ -73,7 +73,7 @@ const EVMAP={};
 const add=e=>{EVENTS.push(e);EVMAP[e.id]=e;};
 
 /* ---------- group roles: everyone you take in does something for you ---------- */
-const ROLES={Tiago:'scout',Lucia:'kin',Haruto:'scout',Amira:'medic',Yael:'medic',Ruth:'medic','Dona Marta':'cook',Aiko:'cook',Sami:'kin',Nora:'driver',Mara:'scout',Dev:'tech','Ms. Cole':'leader','Cpl. Reyes':'fighter','Dr. Hale':'medic',Sofia:'hunter',Ben:'fighter',Ines:'medic',Omar:'hunter',Kim:'tech',Petra:'scout',Joao:'cook',Rex:'scout'};
+const ROLES={Tiago:'scout',Lucia:'kin',Haruto:'scout',Amira:'medic',Yael:'medic',Ruth:'medic','Dona Marta':'cook',Aiko:'cook',Sami:'kin',Nora:'driver',Mara:'scout',Dev:'tech','Ms. Cole':'leader','Cpl. Reyes':'fighter','Dr. Hale':'medic',Sofia:'hunter',Ben:'guard',Ines:'medic',Omar:'hunter',Kim:'tech',Petra:'scout',Joao:'cook',Rex:'scout'};
 const RECRUITS=[
  {name:'Ben',role:'fighter',en:'Former bouncer, built like a door',he:'שוער לשעבר, בנוי כמו דלת'},
  {name:'Ines',role:'medic',en:'Nurse who never left her post',he:'אחות שלא עזבה את עמדתה'},
@@ -82,7 +82,7 @@ const RECRUITS=[
  {name:'Petra',role:'scout',en:'Runner who knows every rooftop',he:'רצה שמכירה כל גג'},
  {name:'Joao',role:'cook',en:'Cook who makes stew from nothing',he:'טבח שמכין תבשיל מכלום'}
 ];
-const ROLEN={medic:['Medicine','רפואה'],cook:['Cooking','בישול'],hunter:['Hunting','ציד'],scout:['Scouting','סיור'],tech:['Repairs','תיקונים'],leader:['Leadership','מנהיגות'],fighter:['Fighting','לחימה'],driver:['Driving','נהיגה'],kin:['Family','משפחה']};
+const ROLEN={medic:['Medicine','רפואה'],cook:['Cooking','בישול'],hunter:['Hunting','ציד'],scout:['Scouting','סיור'],tech:['Repairs','תיקונים'],leader:['Leadership','מנהיגות'],fighter:['Fighting','לחימה'],guard:['Guarding','שמירה'],driver:['Driving','נהיגה'],kin:['Family','משפחה']};
 
 const HEV={};
 /* one place, both languages: [en,he] pairs. every question has exactly two choices. */

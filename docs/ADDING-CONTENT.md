@@ -111,3 +111,23 @@ dil({id:'dil_cache', cond:()=>G.w.day>=T(3), w:45,
 - **A flag can change later odds.** Add it to `FLAG_MODS` in `engine/game.js`: `dil_armed:{strength:1,charisma:-1}` means that from then on, strength rolls are one step easier and charisma rolls one step harder. The player sees "a choice you made earlier" among what tips a roll.
 - **A flag can bring news later.** Write a follow-up event with `cond:()=>since('dil_armed',6)` (it arrives six scaled turns after the choice). A follow-up can say something the player did not know when they chose, like the one where the person you saved reveals that the other was their sibling (`echo_dil_two`).
 
+## An armed encounter
+
+In `src/js/content/events/armed.js`. One option spends ammunition (`cost:{ammo:2}`) and is much easier (`check:{..., armed:true}` adds +2 and shows as "your gear"); the other never costs any. Give the event `w:armedW` so it appears far more often when the player is carrying ammunition.
+
+## Survival points and the shop
+
+Points are earned when a run ends (`runPoints` in `engine/meta.js`: road covered, surviving, humanity, companions, bonds, story chapters) and whenever an achievement or trophy unlocks. The bank holds at most `BANK_CAP` (1000). The supplies page of the creation wizard spends them on the packs in `SHOP`: food 500 (3 rations), water 500 (3 bottles), medicine 500 (2 doses), ammunition 300 (4 rounds), each with a limit per run. To change a price or a pack size, edit its row in `SHOP`.
+
+## A profession-in-a-country chapter
+
+In `story/pairs.js`, add a scene to `PAIR_SCENE` under the key `'<profession>/<country>'`. The two choices come from `PAIR_CH` for that profession. The doctor in Brazil and Israel are written by hand in `doctor.js`.
+
+## Companions' gifts
+
+What each kind of companion brings is the `PERKS` table in `engine/game.js`: `every` is how many choices between gifts, `res` and `n` are what arrives, and `p` (optional) is the chance. A medic waits until the player is hurt; a bond makes every gift come one choice sooner (never faster than every second choice). Gifts are hidden: the squad panel shows a question mark until a companion's first gift arrives, and the recruit picker never names the role. Descriptions shown after discovery live in `UI.*.roles` in `i18n/ui-strings.js`.
+
+## Sharing
+
+`ui/share.js` draws a card on a canvas (`drawShareCard`) and builds a line of text (`shareText`). The end screen's Share button opens a dialog with the card, the text, and buttons for the phone's share sheet, copy, and save image.
+

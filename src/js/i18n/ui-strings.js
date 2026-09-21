@@ -58,7 +58,7 @@ en:{
  rolling:'Rolling…',skip:'Skip',edgePos:'In your favor: ',edgeNeg:'Against you: ',andW:' and ',
  edge:{training:'your training',group:'your group',gear:'your gear',rep:'your reputation',situation:'the situation',outbreak:'the outbreak',marks:'old injuries',state:'your condition',noise:'the noise of the group',years:'the long road',past:'a choice you made earlier'},
  nothingChanges:'Nothing changes.',loyalty:'Loyalty',
- roles:{medic:['Medicine','Heals you +2 health every turn.'],cook:['Cooking','Stretches the food: sometimes +1 food.'],hunter:['Hunting','Sometimes brings back food.'],scout:['Scouting','Sometimes finds water. Cancels group noise when sneaking.'],tech:['Repairs','Sometimes scrounges ammo. Helps with clever solutions.'],leader:['Leadership','+1 morale every turn. Helps in talks.'],fighter:['Fighting','Helps in fights.'],driver:['Driving','Helps when running.'],kin:['Family','Lifts your morale, but needs protecting.']},
+ roles:{medic:['Medicine','Every 3 choices: +4 health.'],cook:['Cooking','Every 4 choices: +1 food.'],hunter:['Hunting','Every 4 choices: +1 food.'],scout:['Scouting','Every 4 choices: +1 water. Cancels group noise when sneaking.'],tech:['Repairs','Every 5 choices: +1 ammo. Helps with clever solutions.'],leader:['Leadership','Every 3 choices: +1 morale. Helps in talks.'],fighter:['Fighting','Every 2 choices: +1 ammo. Helps in fights.'],guard:['Guarding','Every 3 choices: a 34% chance of +1 morale.'],driver:['Driving','Helps when running.'],kin:['Family','Every 3 choices: a 50% chance of +1 morale. Needs protecting.']},
  flagChip:{base:'You claim a base',nomad:'You take to the road',leader:'You lead the group',raiderAlly:'You ride with the gang',raiderEnemy:'The gang wants you dead',settled:'You are inside the walls',garden:'A garden is growing',rifle:'You now carry a rifle',filter:'You now have a water filter',map:'You now have a map',cure:'The cure is spreading'},
  unflagChip:{base:'You lose your base',raiderAlly:'You leave the gang'},
  loyChip:(n,d,f)=>`${n} trusts you ${d>0?'more':'less'}`,loyAllChip:d=>`The group trusts you ${d>0?'more':'less'}`,
@@ -106,7 +106,7 @@ he:{
  rolling:'מגלגלים...',skip:'לדלג',edgePos:'לטובתך: ',edgeNeg:'נגדך: ',andW:' ו',
  edge:{training:'ההכשרה שלך',group:'הקבוצה',gear:'הציוד',rep:'המוניטין',situation:'המצב',outbreak:'המגפה',marks:'פציעות ישנות',state:'המצב שלך',noise:'רעש הקבוצה',years:'הדרך הארוכה',past:'בחירה קודמת'},
  nothingChanges:'שום דבר לא משתנה.',loyalty:'נאמנות',
- roles:{medic:['רפואה','מרפא אותך +2 בריאות בכל תור.'],cook:['בישול','מותח את האוכל: לפעמים +1 אוכל.'],hunter:['ציד','לפעמים מביא אוכל.'],scout:['סיור','לפעמים מוצא מים. מבטל את רעש הקבוצה בהתגנבות.'],tech:['תיקונים','לפעמים מוצא תחמושת. עוזר בפתרונות מתוחכמים.'],leader:['מנהיגות','+1 מורל בכל תור. עוזר בשיחות.'],fighter:['לחימה','עוזר בקרבות.'],driver:['נהיגה','עוזר בבריחה.'],kin:['משפחה','מעלה את המורל, אבל צריך הגנה.']},
+ roles:{medic:['רפואה','כל 3 בחירות: +4 בריאות.'],cook:['בישול','כל 4 בחירות: +1 אוכל.'],hunter:['ציד','כל 4 בחירות: +1 אוכל.'],scout:['סיור','כל 4 בחירות: +1 מים. מבטל את רעש הקבוצה בהתגנבות.'],tech:['תיקונים','כל 5 בחירות: +1 תחמושת. עוזר בפתרונות מתוחכמים.'],leader:['מנהיגות','כל 3 בחירות: +1 מורל. עוזר בשיחות.'],fighter:['לחימה','כל 2 בחירות: +1 תחמושת. עוזר בקרבות.'],guard:['שמירה','כל 3 בחירות: סיכוי של 34% ל־+1 מורל.'],driver:['נהיגה','עוזר בבריחה.'],kin:['משפחה','כל 3 בחירות: סיכוי של 50% ל־+1 מורל. צריך הגנה.']},
  flagChip:{base:'תפסת בסיס',nomad:'יצאת לדרך',leader:'לקחת הובלה',raiderAlly:'הצטרפת לכנופיה',raiderEnemy:'הכנופיה רוצה בנפילתך',settled:'נכנסת מאחורי החומות',garden:'גינה גדלה',rifle:'עכשיו יש רובה',filter:'עכשיו יש מסנן מים',map:'עכשיו יש מפה',cure:'התרופה מתפשטת'},
  unflagChip:{base:'איבדת את הבסיס',raiderAlly:'עזבת את הכנופיה'},
  loyChip:(n,d,f)=>`${n} ${f?'סומכת':'סומך'} עליך ${d>0?'יותר':'פחות'}`,loyAllChip:d=>`הקבוצה סומכת עליך ${d>0?'יותר':'פחות'}`,
@@ -148,4 +148,29 @@ Object.assign(UI.he,{sWho:'הדמות',sWhere:'המקום',sPast:'העבר',sRea
 /* dilemmas: choices with a price and no dice */
 Object.assign(UI.en,{dilPill:'A choice, not a chance'});
 Object.assign(UI.he,{dilPill:'בחירה, לא הימור'});
+
+/* the supplies shop and survival points */
+Object.assign(UI.en,{sShop:'Supplies',shopH:'Supplies',shopP:'Spend your survival points on a head start. What you buy is used up: it is only for this run.',
+  bankLbl:'Survival points',bankLeft:'After buying',bankEmpty:'You have no points yet. Finish a run, or earn achievements and trophies, and they arrive here.',
+  ptsUnit:'pts',shopNone:'nothing bought',withRifle:'And a hunting rifle.',
+  endPtsH:'Survival points',endPtsRoad:'Road covered',endPtsSurvived:'Survived',endPtsHum:'Humanity',endPtsGroup:'Companions alive',endPtsBond:'Bonds',endPtsStory:'Story chapters',endPtsExtra:'Achievements and trophies',endPtsTotal:'Earned',endPtsBank:'In the bank',endPtsCap:'The bank is full. Spend some, or the next points are lost.'});
+Object.assign(UI.he,{sShop:'אספקה',shopH:'אספקה',shopP:'לבזבז נקודות הישרדות על התחלה טובה יותר. מה שקונים נגמר: זה רק לריצה הזו.',
+  bankLbl:'נקודות הישרדות',bankLeft:'אחרי הקנייה',bankEmpty:'עדיין אין נקודות. מסיימים ריצה, או צוברים הישגים וגביעים, והן מגיעות לכאן.',
+  ptsUnit:'נק׳',shopNone:'לא נקנה דבר',withRifle:'ורובה ציד.',
+  endPtsH:'נקודות הישרדות',endPtsRoad:'דרך שנעברה',endPtsSurvived:'שרדו',endPtsHum:'אנושיות',endPtsGroup:'מלווים חיים',endPtsBond:'קשרים',endPtsStory:'פרקי עלילה',endPtsExtra:'הישגים וגביעים',endPtsTotal:'נצברו',endPtsBank:'בבנק',endPtsCap:'הבנק מלא. כדאי לבזבז, אחרת הנקודות הבאות יאבדו.'});
+UI.en.pts='trophy score';UI.he.pts='ניקוד גביעים';
+
+/* companions: gifts are found out, not announced */
+Object.assign(UI.en,{roleUnknown:'Their gift will show itself.',perkChip:(who,n,res)=>`${who}: +${n} ${res.toLowerCase()}`});
+Object.assign(UI.he,{roleUnknown:'היכולת שלהם עוד תתגלה.',perkChip:(who,n,res)=>`${who}: +${n} ${res}`});
+
+/* sharing the end screen */
+Object.assign(UI.en,{shareBtn:'Share',shareH:'Share your run',shareNative:'Share\u2026',shareCopy:'Copy text',shareCopied:'Copied.',shareSave:'Save image',shareSaved:'Saved.',shareClose:'Close',
+  shareSurvived:y=>`Survived ${y} years.`,shareDied:y=>`Died after ${y} years.`,shareTurned:y=>`Turned after ${y} years.`,
+  shareYears:'Years',shareDecisions:'Decisions',shareHumanity:'Humanity',shareGroup:'Companions',sharePoints:'Survival points',shareTag:'How long would you last?',
+  shareLine:(name,who,outcome,hum,grp,pts,url)=>`${name}, ${who}. ${outcome} Humanity ${hum}%, ${grp} companion${grp===1?'':'s'}, ${pts} survival points. Days After: ${url}`});
+Object.assign(UI.he,{shareBtn:'שיתוף',shareH:'לשתף את הריצה',shareNative:'שיתוף\u2026',shareCopy:'להעתיק טקסט',shareCopied:'הועתק.',shareSave:'לשמור תמונה',shareSaved:'נשמר.',shareClose:'סגירה',
+  shareSurvived:y=>`שרדו ${y} שנים.`,shareDied:y=>`מתו אחרי ${y} שנים.`,shareTurned:y=>`הפכו אחרי ${y} שנים.`,
+  shareYears:'שנים',shareDecisions:'החלטות',shareHumanity:'אנושיות',shareGroup:'מלווים',sharePoints:'נקודות הישרדות',shareTag:'כמה זמן תחזיקו מעמד?',
+  shareLine:(name,who,outcome,hum,grp,pts,url)=>`${name}, ${who}. ${outcome} אנושיות ${hum}%, ${grp} מלווים, ${pts} נקודות הישרדות. ימים אחרי: ${url}`});
 

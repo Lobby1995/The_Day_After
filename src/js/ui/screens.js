@@ -8,7 +8,7 @@ const sprGame=()=>{const p=G.p;return{sex:p.sex,age:p.age,skin:p.skin,seed:p.see
 const canvasHtml=(o,scale,cls,extra)=>`<canvas class="spr ${cls||''}" width="24" height="48" style="width:${24*scale}px;height:${48*scale}px" data-o="${esc(JSON.stringify(o))}" ${extra||''} aria-hidden="true"></canvas>`;
 function paintAll(){document.querySelectorAll('canvas.spr').forEach(cv=>{try{spriteToCanvas(cv,JSON.parse(cv.dataset.o));}catch(e){}});}
 
-let CFG={name:'',auto:true,sex:'m',age:32,loc:'random',bg:'random',road:5,skin:0};
+let CFG={name:'',auto:true,sex:'m',age:32,loc:'random',bg:'random',road:5,skin:0,buy:{}};
 let view='title';
 
 /* ---------- language ---------- */
@@ -64,7 +64,7 @@ function renderTitle(){
 
 /* ---------- creation: one page per step, with a summary that follows you ---------- */
 let CSTEP=0;                                   // 0 who, 1 where, 2 past, 3 ready
-const CSTEPS=['sWho','sWhere','sPast','sReady'];
+const CSTEPS=['sWho','sWhere','sPast','sShop','sReady'];
 const ageBonus=b=>Object.entries(bgObj(b).bonus).map(([k,v])=>`+${v} ${statN(k)}`).join(', ');
 const nmField=()=>{const n=$('nm');if(n)n.value=CFG.name;};
 function stepWho(){return `<h2>${t('hWho')}</h2><p>${t('pWho')}</p>
@@ -84,6 +84,22 @@ function stepPast(){return `<h2>${t('hBg')}</h2><p>${t('pBg')}</p>
       ${BGS.map(b=>`<button class="brow" data-act="bg" data-v="${b.id}">${canvasHtml(sprCreate(b.id),2,'',`data-bgid="${b.id}"`)}<span class="btxt"><span class="nm" data-bgname="${b.id}">${bgN(b.id,CFG.sex)}</span><span class="pk">${bgPerk(b.id)}</span><span class="bn">${ageBonus(b.id)}</span></span></button>`).join('')}
       <button class="brow" data-act="bg" data-v="random">${canvasHtml(sprCreate('?'),2)}<span class="btxt"><span class="nm">${t('random')}</span><span class="pk">${t('pRandomBg')}</span></span></button>
     </div>`;}
+/* the supplies page: survival points, banked between runs, buy a head start */
+const buyOf=id=>Math.min(SHOP.find(x=>x.id===id).max,Math.max(0,+(CFG.buy||{})[id]||0));
+const buyCost=()=>shopCost(CFG.buy);
+function stepShop(){
+  const left=(META.bank||0)-buyCost();
+  const rows=SHOP.map(it=>{
+    const n=buyOf(it.id),canMore=n<it.max&&left>=it.price;
+    return `<div class="shoprow"><span class="sname"><b>${LANG==='he'?it.he:it.en}</b><small>${it.pack} ${LANG==='he'?it.unit[1]:it.unit[0]} \u00b7 ${it.price} ${t('ptsUnit')}</small></span>
+      <span class="sctl"><button class="btn sm ghost" data-act="buy" data-v="${it.id}:-1" ${n?'':'disabled'} aria-label="-">\u2212</button><b class="num sn">${n}</b><button class="btn sm ghost" data-act="buy" data-v="${it.id}:1" ${canMore?'':'disabled'} aria-label="+">+</button></span></div>`;
+  }).join('');
+  return `<h2>${t('shopH')}</h2><p>${t('shopP')}</p>
+    <div class="bankbar"><span>${t('bankLbl')}</span><b class="num">${META.bank||0} / ${BANK_CAP}</b><span class="bl">${t('bankLeft')}: <b class="num">${left}</b></span></div>
+    ${(META.bank||0)<=0?`<p class="small">${t('bankEmpty')}</p>`:''}
+    <div class="shoplist">${rows}</div>`;
+}
+const suppliesText=()=>{const list=SHOP.filter(it=>buyOf(it.id)>0).map(it=>`${LANG==='he'?it.he:it.en} +${buyOf(it.id)*it.pack}`);return list.length?list.join(', ')+` (${buyCost()} ${t('ptsUnit')})`:t('shopNone');};
 /* the last page: everything you chose, each with a way back to change it */
 function stepReady(){
   const b=CFG.bg==='random'?null:bgObj(CFG.bg);
@@ -91,7 +107,8 @@ function stepReady(){
     [t('road'),t('yearsShort',CFG.road),-1],
     [t('hWho'),`${esc((CFG.name||'').trim()||'?')} \u00b7 ${tt('sexWord',CFG.sex)}, ${CFG.age}`,0],
     [t('hWhere'),CFG.loc==='random'?t('random'):locName(CFG.loc),1],
-    [t('hBg'),b?bgN(b.id,CFG.sex):t('random'),2]
+    [t('hBg'),b?bgN(b.id,CFG.sex):t('random'),2],
+    [t('sShop'),suppliesText(),3]
   ];
   return `<h2>${t('sReadyH')}</h2><p>${t('sReadyP')}</p>
     <div class="sumlist">${rows.map(r=>`<div class="sumrow"><span class="sk">${r[0]}</span><b class="sv">${r[1]}</b>${r[2]>=0?`<button class="btn sm ghost" data-act="stepGo" data-v="${r[2]}">${t('change')}</button>`:''}</div>`).join('')}</div>`;
@@ -107,6 +124,7 @@ function chipsHtml(){
   if(CSTEP>0)chips.push([`${esc((CFG.name||'').trim()||'?')} \u00b7 ${tt('sexWord',CFG.sex)}, ${CFG.age}`,0]);
   if(CSTEP>1)chips.push([CFG.loc==='random'?t('random'):locName(CFG.loc),1]);
   if(CSTEP>2)chips.push([b?bgN(b.id,CFG.sex):t('random'),2]);
+  if(CSTEP>3&&buyCost()>0)chips.push([suppliesText(),3]);
   return `<div class="chips-row">${chips.map(c=>c[1]>=0?`<button class="cchip" data-act="stepGo" data-v="${c[1]}">${c[0]}</button>`:`<span class="cchip fixed">${c[0]}</span>`).join('')}</div>`;
 }
 function navHtml(){
@@ -116,7 +134,7 @@ function navHtml(){
 function renderCreate(){
   view='create';
   if(!CFG.name)CFG.name=randName(CFG.sex);
-  const body=[stepWho,stepWhere,stepPast,stepReady][CSTEP]();
+  const body=[stepWho,stepWhere,stepPast,stepShop,stepReady][CSTEP]();
   main().innerHTML=`<section class="wiz"><div class="create-grid"><div>
     <div class="wiztop">${stepperHtml()}<button class="btn sm ghost" data-act="randall">${t('randAll')}</button></div>
     ${chipsHtml()}
@@ -145,7 +163,7 @@ function updateCreate(){
   const hp=50+st.health*5;
   const nm=CFG.name.trim()||'?';
   let stock=t('stockUnknown');
-  if(CFG.loc!=='random'&&b){const s={...LOCS[CFG.loc].sup};if(b.id==='soldier')s.ammo+=3;if(b.id==='doctor')s.meds+=3;if(b.id==='politician')s.food+=1;stock=t('stockTxt',s.food,s.water,s.meds,s.ammo);}
+  if(CFG.loc!=='random'&&b){const s={...LOCS[CFG.loc].sup};if(b.id==='soldier')s.ammo+=3;if(b.id==='doctor')s.meds+=3;if(b.id==='politician')s.food+=1;SHOP.forEach(it=>{s[it.id]+=buyOf(it.id)*it.pack;});stock=t('stockTxt',s.food,s.water,s.meds,s.ammo);}
   $('tag').innerHTML=`<div class="tag"><span class="hole"></span><div class="band">${tt('tri','green')}</div><div class="in">
     <div class="tagtop">${canvasHtml(sprCreate(b?b.id:'?'),4)}<div><div class="nm">${esc(nm)}</div>
       <div class="id">${t('idLine',tt('sexWord',CFG.sex),CFG.age)}<br>${b?bgN(b.id,CFG.sex):t('bgRandom')}${CFG.loc==='random'?'':`<br>${locName(CFG.loc)}`}<br>${t('yearsShort',CFG.road)}</div></div></div>
@@ -157,7 +175,7 @@ function startFromCreate(){
   const loc=CFG.loc==='random'?pick(LOC_ORDER):CFG.loc;
   const bg=CFG.bg==='random'?pick(BGS).id:CFG.bg;
   const name=(CFG.name||'').trim()||randName(CFG.sex);
-  newGame({name,sex:CFG.sex,age:CFG.age,loc,bg,road:CFG.road,skin:CFG.skin});
+  newGame({name,sex:CFG.sex,age:CFG.age,loc,bg,road:CFG.road,skin:CFG.skin,buy:{...CFG.buy}});
   renderPlay();
 }
 
@@ -182,7 +200,7 @@ const meterHtml=(label,valTxt,cls,pct)=>`<div class="meter"><div class="mlab"><s
 function trioHtml(){
   const p=G.p,mk=marksOf(),M=UI[LANG].marks;
   const scars=mk.length?`<ul>${mk.map(m=>`<li title="${esc(M[m][1])}"><b>${M[m][0]}</b><span>${M[m][1]}</span></li>`).join('')}</ul>`:`<p class="small">${t('noMarks')}</p>`;
-  const squad=p.group.length?`<ul>${p.group.map(m=>{const R=UI[LANG].roles[m.role]||UI[LANG].roles.kin;return`<li title="${esc(R[1])}"><b>${esc(pn(m))}</b><em class="role">${R[0]}</em><span>${esc(pt(m))}</span><span class="loy" title="${t('loyalty')}">${'●'.repeat(m.loy)}${'○'.repeat(3-m.loy)}</span></li>`;}).join('')}</ul>`:`<p class="small">${t('alone')}</p>`;
+  const squad=p.group.length?`<ul>${p.group.map(m=>{const R=UI[LANG].roles[m.role]||UI[LANG].roles.kin;return`<li title="${esc(m.known?R[1]:t('roleUnknown'))}"><b>${esc(pn(m))}</b><em class="role${m.known?'':' unk'}">${m.known?R[0]:'?'}</em><span>${esc(pt(m))}</span><span class="loy" title="${t('loyalty')}">${'●'.repeat(m.loy)}${'○'.repeat(3-m.loy)}</span></li>`;}).join('')}</ul>`:`<p class="small">${t('alone')}</p>`;
   const jr=journalHtml(G.log.slice(-3).reverse())||`<p class="small">${t('nothing')}</p>`;
   return`<div class="trio"><div class="tcol"><div class="tlab">${t('hMarks')}</div>${scars}</div><div class="tcol"><div class="tlab">${t('hGroup')}</div>${squad}</div><div class="tcol"><div class="tlab">${t('hJournal')}</div>${jr}</div></div>`;
 }
@@ -268,6 +286,7 @@ function chipText(c0){
   if(c.t==='mark')return t('markGain',UI[LANG].marks[c.m][0]);
   if(c.t==='flag')return UI[LANG].flagChip[c.f];
   if(c.t==='unflag')return UI[LANG].unflagChip[c.f]||'';
+  if(c.t==='perk')return t('perkChip',pn({name:c.name}),c.n,CHIPL[LANG][c.res==='hp'?'hp':c.res]);
   if(c.t==='bond')return t('bondChip',pn({name:c.name}),isF({name:c.name}));
   if(c.t==='loy')return t('loyChip',pn({name:c.name}),c.d,isF({name:c.name}));
   if(c.t==='loyAll')return t('loyAllChip',c.d);
@@ -398,7 +417,7 @@ function renderEnd(){
         <div class="endpic">${canvasHtml(sprGame(),6,o.type==='death'?'dead':o.type==='turned'?'turned':'')}<p class="prose">${esc(epilogue())}</p></div>
         ${legacy.length?`<h2 class="head" style="font-size:1.6rem;margin:26px 0 8px">${t('legacyH')}</h2><ul class="legacy">${legacy.map(l=>`<li>${esc(l)}</li>`).join('')}</ul>`:''}
         ${runTrophiesHtml()}
-        <div class="row" style="margin-top:28px"><button class="btn primary" data-act="new">${t('newSurvivor')}</button><button class="btn" data-act="retry">${t('retry',esc(p.name))}</button></div>
+        <div class="row" style="margin-top:28px"><button class="btn primary" data-act="new">${t('newSurvivor')}</button><button class="btn" data-act="retry">${t('retry',esc(p.name))}</button><button class="btn" data-act="share">${t('shareBtn')}</button></div>
       </div>
       <div>
         <div class="facts">
@@ -410,6 +429,7 @@ function renderEnd(){
           <div class="fact"><b class="num">${w.order}%</b>${F.ord}: ${tt('ord',orderOf(w.order))}</div>
           <div class="fact"><b class="num">${p.humanity}%</b>${F.hum}: ${tt('hum',humOf(p.humanity))}</div>
         </div>
+        ${runPointsHtml()}
         <div class="panel p-log" style="margin-top:22px"><div class="plabel">${t('everyH')}</div>${journalHtml(G.log)}</div>
       </div>
     </div></section>`;
@@ -423,7 +443,7 @@ function showModal(){
   const b=document.querySelector('[data-act="mSame"]');if(b&&b.focus)b.focus();
 }
 const closeModal=()=>{$('modal').innerHTML='';};
-function freshCfg(road){return{name:'',auto:true,sex:'m',age:32,loc:'random',bg:'random',road:road||5,skin:0};}
+function freshCfg(road){return{name:'',auto:true,sex:'m',age:32,loc:'random',bg:'random',road:road||5,skin:0,buy:{}};}
 
 /* ---------- wiring ---------- */
 document.addEventListener('click',e=>{
@@ -447,8 +467,15 @@ document.addEventListener('click',e=>{
   if(a==='bg'){CFG.bg=v;return updateCreate();}
   
   if(a==='skin'){CFG.skin=+v;return updateCreate();}
-  if(a==='randall'){CFG.sex=pick(['m','f']);CFG.age=18+rnd(43);CFG.name=randName(CFG.sex);CFG.auto=true;CFG.loc='random';CFG.bg='random';CFG.skin=rnd(4);CSTEP=CSTEPS.length-1;return renderCreate();}
+  if(a==='randall'){CFG.sex=pick(['m','f']);CFG.age=18+rnd(43);CFG.name=randName(CFG.sex);CFG.auto=true;CFG.loc='random';CFG.bg='random';CFG.skin=rnd(4);CFG.buy={};CSTEP=CSTEPS.length-1;return renderCreate();}
+  if(a==='buy'){const [id,d]=v.split(':');const it=SHOP.find(x=>x.id===id);if(!it)return;CFG.buy=CFG.buy||{};const n=buyOf(id)+(+d);
+    if(n>=0&&n<=it.max){const before=CFG.buy[id]||0;CFG.buy[id]=n;if(buyCost()>(META.bank||0))CFG.buy[id]=before;}
+    return renderCreate();}
   if(a==='start')return startFromCreate();
+  if(a==='share')return showShare();
+  if(a==='shareNative')return nativeShare();
+  if(a==='shareCopy')return copyShare();
+  if(a==='shareSave')return saveShareImage();
   if(a==='stepNext'){CSTEP=Math.min(CSTEPS.length-1,CSTEP+1);return renderCreate();}
   if(a==='stepBack'){if(CSTEP===0)return renderTitle();CSTEP--;return renderCreate();}
   if(a==='stepGo'){CSTEP=Math.max(0,Math.min(CSTEPS.length-1,+v));return renderCreate();}

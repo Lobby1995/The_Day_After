@@ -45,4 +45,8 @@
   .endpic{flex-direction:column}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* share dialog */
+.sharedlg{max-width:520px;width:calc(100vw - 32px);max-height:calc(100vh - 32px);overflow:auto}
+.sharecv{display:block;width:100%;height:auto;border:2px solid var(--border);border-radius:4px;margin:10px 0}
+.sharetxt{width:100%;font:inherit;font-size:.9rem;padding:.6em .8em;background:#111;color:var(--text);border:2px solid var(--border);border-radius:3px;resize:none;margin-bottom:12px}
 

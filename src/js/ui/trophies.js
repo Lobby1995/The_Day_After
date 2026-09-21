@@ -61,3 +61,16 @@ function runTrophiesHtml(){
   const items=ids.map(id=>TRO.find(x=>x.id===id)).filter(Boolean);
   return`<h2 class="head" style="font-size:1.6rem;margin:26px 0 8px">${t('troEarnedH')}</h2>${items.length?`<div class="tgrid tsm">${items.map(o=>tcard(o,META.tro,true)).join('')}</div>`:`<p class="small">${t('troNone')}</p>`}<div class="row" style="margin-top:14px"><button class="btn sm" data-act="trophies">${t('troBtn')}</button></div>`;
 }
+
+/* the end screen: what the run was worth, and what is now in the bank */
+function runPointsHtml(){
+  const e=G.earned;if(!e)return'';
+  const rows=[['endPtsRoad',e.road],['endPtsSurvived',e.survived],['endPtsHum',e.humanity],['endPtsGroup',e.companions],['endPtsBond',e.bonds],['endPtsStory',e.story],['endPtsExtra',G.earnedExtra||0]].filter(r=>r[1]);
+  const total=e.total+(G.earnedExtra||0);
+  return `<div class="panel p-pts" style="margin-top:22px"><div class="plabel">${t('endPtsH')}</div>
+    <div class="ptlist">${rows.map(r=>`<div class="ptrow"><span>${t(r[0])}</span><b class="num">+${r[1]}</b></div>`).join('')}
+    <div class="ptrow tot"><span>${t('endPtsTotal')}</span><b class="num">+${total}</b></div>
+    <div class="ptrow"><span>${t('endPtsBank')}</span><b class="num">${META.bank} / ${BANK_CAP}</b></div></div>
+    ${META.bank>=BANK_CAP?`<p class="small">${t('endPtsCap')}</p>`:''}</div>`;
+}
+

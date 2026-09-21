@@ -188,7 +188,7 @@ add({id:'g_recruit',max:3,w:()=>G.p.group.length===0?28:16,cond:()=>G.w.day>=T(3
   const r=n=>RECRUITS.find(x=>x.name===n);
   const A=r(ctx.a),B=r(ctx.b);
   const nh=x=>HE.people[x.name];
-  const choice=x=>({label:bi(`Take ${x.name}`,`לקבל את ${nh(x).n}`),sub:bi(`${x.en}. Role: ${ROLEN[x.role][0].toLowerCase()}.`,`${x.he}. תפקיד: ${ROLEN[x.role][1]}.`),
+  const choice=x=>({label:bi(`Take ${x.name}`,`לקבל את ${nh(x).n}`),sub:bi(`${x.en}.`,`${x.he}.`),
    out:{text:bi(`${x.name} nods once, shoulders a bag, and falls in beside you. The other one watches you go.`,`${nh(x).n} ${nh(x).f?'מהנהנת':'מהנהן'} פעם אחת, ${nh(x).f?'מרימה':'מרים'} תיק ו${nh(x).f?'מצטרפת':'מצטרף'} אליך. השני מסתכל בך הולך.`),join:{name:x.name,trait:x.en,role:x.role},morale:3}});
   return{title:bi('Two at the Fence','שניים ליד הגדר'),
    text:bi(`Two survivors are waiting at your fence, and both look like they can work. You have food for one more mouth. Not two.`,`שני ניצולים ממתינים ליד הגדר שלך, ושניהם נראים כמי שיכולים לעבוד. יש אוכל לפה נוסף אחד. לא לשניים.`),

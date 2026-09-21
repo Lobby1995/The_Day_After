@@ -30,6 +30,7 @@ function newGame(cfg){
   const loc=LOCS[cfg.loc],bg=bgObj(cfg.bg),road=ROADS[cfg.road]||ROADS[5];
   const stats=calcStats(cfg.age,cfg.bg);
   const sup={...loc.sup},flags={...loc.flags};
+  const bought=applyPurchases(cfg.buy,sup,flags);
   if(bg.id==='soldier'){sup.ammo+=3;flags.armed=1;}
   if(bg.id==='doctor'){sup.meds+=3;}
   if(bg.id==='politician'){sup.food+=1;flags.contacts=1;}
@@ -42,7 +43,7 @@ function newGame(cfg){
   G={v:4,cfg:{...cfg},total:road.turns,mpt:road.mpt,scale:road.turns/20,
      p:{name:cfg.name,sex:cfg.sex,age:cfg.age,skin:cfg.skin|0,seed:h,loc:cfg.loc,bg:cfg.bg,stats,hp:maxHp,maxHp,inf:0,morale:70,humanity:50,sup,group:[],marks:[]},
      w:{day:1,outbreak:loc.outbreak,order:loc.order},
-     flags,fday:{},st:freshStats(),toasts:[],seen:[],recent:[],log:[],notes:[],cur:null,over:null,last:null};
+     flags,fday:{},bought,st:freshStats(),toasts:[],seen:[],recent:[],log:[],notes:[],cur:null,over:null,last:null};
   G.pro=prologueFor(G.p).filter(id=>EVMAP[id]);
   startTurn();
 }
@@ -113,6 +114,40 @@ function startTurn(){
   save();
 }
 
+/* what a companion brings, by how many choices they have been with you. `every` choices, `p` is the chance it happens.
+   None of this is shown until it first happens: you find out who you took in by living with them. */
+const PERKS={
+  medic:  {every:3,res:'hp',n:4},
+  fighter:{every:2,res:'ammo',n:1},
+  cook:   {every:4,res:'food',n:1},
+  hunter: {every:4,res:'food',n:1},
+  scout:  {every:4,res:'water',n:1},
+  guard:  {every:3,res:'morale',n:1,p:.34},
+  tech:   {every:5,res:'ammo',n:1},
+  leader: {every:3,res:'morale',n:1},
+  kin:    {every:3,res:'morale',n:1,p:.5}
+};
+function firePerks(members){
+  const out=[];
+  if(G.p.hp<=0)return out;
+  members.forEach(m=>{
+    if(G.p.group.indexOf(m)<0)return;                       // left during this very choice
+    const P=PERKS[m.role];if(!P)return;
+    m.cnt=(m.cnt||0)+1;
+    const every=Math.max(2,P.every-(G.flags['bond_'+m.name]?1:0));   // a bond makes it a choice sooner
+    if(m.cnt<every)return;
+    if(P.res==='hp'&&G.p.hp>=G.p.maxHp){m.cnt=every;return;}         // a medic waits until you need them
+    m.cnt=0;
+    if(P.p&&Math.random()>=P.p)return;
+    if(P.res==='hp')G.p.hp=Math.min(G.p.maxHp,G.p.hp+P.n);
+    else if(P.res==='morale')G.p.morale=clamp(G.p.morale+P.n,0,100);
+    else G.p.sup[P.res]+=P.n;
+    m.known=true;
+    out.push({c:'good',t:'perk',name:m.name,res:P.res,n:P.n});
+  });
+  return out;
+}
+
 /* choices made earlier that shift the odds of later ones, by the stat being tested. keys are flags. */
 const FLAG_MODS={
   dil_armed:{strength:1,charisma:-1},   // took the rifle: harder to beat, harder to trust
@@ -144,6 +179,8 @@ function chance(ch){
   if(F.map&&(c.stat==='stamina'||c.stat==='stealth')){val+=1;parts.push(['gear',1]);}
   if(F.filter&&c.water){val+=2;parts.push(['gear',2]);}
   if(F.nomad&&c.stat==='stamina'){val+=1;parts.push(['gear',1]);}
+  /* firing what you paid for: a choice marked armed is much easier, and it has already cost the rounds */
+  if(c.armed){val+=2;parts.push(['gear',2]);}
   /* what you chose earlier changes what you are good at now */
   for(const f in FLAG_MODS){const d=FLAG_MODS[f][c.stat];if(F[f]&&d){val+=d;parts.push(['past',d]);}}
   const M=G.p.marks;
@@ -279,7 +316,9 @@ function choose(ci){
     const c=chance(ch);p=c.p;ok=Math.random()<p;
     br=ok?'win':'lose';fx=ch[br];edges=edgeKeys(c);
   }else{br='out';fx=ch.out;}
+  const withMe=G.p.group.slice();
   const chips=applyFx(fx,ctx,ch.cost);
+  chips.push(...firePerks(withMe));
   {const st=G.st;st.decisions++;
    if(ch.check){st.flips++;
     if(ok){st.won++;st.streak++;st.lstreak=0;st.best=Math.max(st.best,st.streak);if(p<=.3)st.longWins++;if(p>=.8)st.sureWins++;}
@@ -330,17 +369,6 @@ function advanceDay(){
   if(G.flags.settled){p.sup.food+=1;p.sup.water+=1;p.morale=clamp(p.morale+1,0,100);notes.push({k:'settled'});}
   if(G.flags.garden&&t1.season!=='winter'){p.sup.food+=1;notes.push({k:'garden'});}
   if(G.flags.base&&!G.flags.settled){p.morale=clamp(p.morale+1,0,100);if(p.hp<p.maxHp)p.hp=Math.min(p.maxHp,p.hp+2);notes.push({k:'base'});}
-  /* everyone you took in does something for you */
-  p.group.forEach(m=>{
-    const g=(res,n)=>{if(res==='hp')p.hp=Math.min(p.maxHp,p.hp+n);else if(res==='morale')p.morale=clamp(p.morale+n,0,100);else p.sup[res]+=n;notes.push({k:'perk',name:m.name,res,n});};
-    const bx=G.flags['bond_'+m.name]?1.5:1;
-    if(m.role==='medic'&&p.hp<p.maxHp)g('hp',G.flags['bond_'+m.name]?3:2);
-    else if((m.role==='cook'||m.role==='hunter')&&Math.random()<.5*bx)g('food',1);
-    else if(m.role==='scout'&&Math.random()<.4*bx)g('water',1);
-    else if(m.role==='tech'&&Math.random()<.3*bx)g('ammo',1);
-    else if(m.role==='leader')g('morale',G.flags['bond_'+m.name]?2:1);
-    else if(m.role==='kin'&&Math.random()<.5*bx)g('morale',1);
-  });
   if(hungry){p.hp-=8;p.morale-=4;notes.push({k:'hungry'});}
   if(thirsty){p.hp-=12;p.morale-=4;notes.push({k:'thirsty'});}
   if(hungry||thirsty)G.st.hungry++;

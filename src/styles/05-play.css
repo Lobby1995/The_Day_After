@@ -91,3 +91,5 @@
 .chip.bad{border-inline-start-color:var(--accent)}
 .after{margin-top:28px}
 .play-grid + .vitals{margin-top:30px;margin-bottom:0}
+.tcol .role.unk{background:transparent;color:var(--muted);border:1px dashed var(--border)}
+

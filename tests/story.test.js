@@ -29,7 +29,7 @@ const PAIR={'doctor/brazil':'pair_doc_br','doctor/israel':'pair_doc_il'};
 const COMBOS=[];
 Object.keys(LOC_ARC).forEach(loc=>Object.keys(BG_ARC).forEach(bg=>{
   const want=[...arc(LOC_ARC[loc]),...arc(BG_ARC[bg],4)];
-  if(PAIR[bg+'/'+loc])want.push(PAIR[bg+'/'+loc]);
+  want.push(PAIR[bg+'/'+loc]||('pair_'+bg+'_'+loc));   // every pair now has its own chapter
   COMBOS.push([loc,bg,want]);
 }));
 [5,15,20].forEach(road=>{

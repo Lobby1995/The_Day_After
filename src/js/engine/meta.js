@@ -1,8 +1,20 @@
 
 /* ---------- achievements (moments) and trophies (run medals). saved between runs. ---------- */
 const META_KEY='daysafter.meta.v1';
-let META={ach:{},tro:{},runs:0,deaths:0,decisions:0,surv:{loc:{},bg:{}},causes:{}};
-function metaLoad(){try{const s=localStorage.getItem(META_KEY);if(s){const m=JSON.parse(s);if(m&&m.ach){META=Object.assign(META,m);META.surv=META.surv||{loc:{},bg:{}};META.causes=META.causes||{};}}}catch(e){}}
+/* survival points: earned by playing, banked up to a cap, spent on starting supplies */
+const BANK_CAP=1000;
+const SHOP=[
+  /* a purchase is a pack: `pack` units for `price` points. `max` is how many packs of it can be bought for one run. */
+  {id:'food', price:500,max:2,pack:3,en:'Food',he:'אוכל',unit:['rations','מנות']},
+  {id:'water',price:500,max:2,pack:3,en:'Water',he:'מים',unit:['bottles','בקבוקים']},
+  {id:'meds', price:500,max:2,pack:2,en:'Medicine',he:'תרופה',unit:['doses','מנות']},
+  {id:'ammo', price:300,max:3,pack:4,en:'Ammunition',he:'תחמושת',unit:['rounds','כדורים']}
+];
+const bankAdd=n=>{META.bank=Math.max(0,Math.min(BANK_CAP,(META.bank||0)+n));};
+const shopCost=buy=>SHOP.reduce((a,it)=>a+it.price*Math.min(it.max,Math.max(0,+((buy||{})[it.id])||0)),0);
+
+let META={ach:{},tro:{},runs:0,deaths:0,decisions:0,surv:{loc:{},bg:{}},causes:{},bank:0};
+function metaLoad(){try{const s=localStorage.getItem(META_KEY);if(s){const m=JSON.parse(s);if(m&&m.ach){META=Object.assign(META,m);META.surv=META.surv||{loc:{},bg:{}};META.causes=META.causes||{};META.bank=Math.max(0,Math.min(BANK_CAP,+META.bank||0));}}}catch(e){}}
 function metaSave(){try{localStorage.setItem(META_KEY,JSON.stringify(META));}catch(e){}}
 try{metaLoad();}catch(e){}
 const yearNow=()=>timeOf(G.w.day).year;
@@ -122,6 +134,7 @@ function grant(kind,id){
   const box=kind==='ach'?META.ach:META.tro;
   if(box[id])return false;
   box[id]=Date.now();
+  {const pts=kind==='ach'?10:TIERPTS[(TRO.find(x=>x.id===id)||{}).tier]||0;bankAdd(pts);if(G){G.earnedExtra=(G.earnedExtra||0)+pts;}}
   if(G){G.toasts=G.toasts||[];G.toasts.push({kind,id});if(kind==='tro'){G.newTro=G.newTro||[];G.newTro.push(id);}}
   return true;
 }
@@ -131,10 +144,41 @@ function evalAch(){
   ACH.forEach(a=>{if(!META.ach[a.id]){let ok=false;try{ok=a.test();}catch(e){}if(ok&&grant('ach',a.id))any=true;}});
   if(any)metaSave();
 }
+/* what a finished run is worth. shown on the end screen, and added to the bank. */
+function runPoints(g){
+  const p=g.p,over=g.over&&g.over.type,done=over==='survived';
+  const seen=g.seen||[];
+  const chapters=seen.filter(id=>EVMAP[id]&&EVMAP[id].story).length;
+  const bonds=Object.keys(g.flags).filter(k=>k.indexOf('bond_')===0).length;
+  const parts={
+    road:done?100:Math.round(100*Math.min(1,(g.w.day-1)/g.total)),
+    survived:done?150:0,
+    humanity:Math.round(p.humanity/2),
+    companions:15*p.group.length,
+    bonds:10*bonds,
+    story:8*chapters
+  };
+  parts.total=Object.keys(parts).reduce((a,k)=>a+parts[k],0);
+  return parts;
+}
+/* spend banked points on starting supplies. clamps to what is affordable, charges once, returns what was bought. */
+function applyPurchases(buy,sup,flags){
+  const bought={};let left=META.bank||0,spent=0;
+  SHOP.forEach(it=>{
+    let n=Math.min(it.max,Math.max(0,Math.floor(+((buy||{})[it.id])||0)));
+    while(n>0&&it.price>left)n--;
+    if(n<=0)return;
+    left-=n*it.price;spent+=n*it.price;bought[it.id]=n;
+    sup[it.id]=(sup[it.id]||0)+n*it.pack;
+  });
+  if(spent){META.bank=Math.max(0,(META.bank||0)-spent);metaSave();}
+  return bought;
+}
 function finishRun(){
   if(!G||G.tallied)return;
   G.tallied=1;
   const over=G.over.type;
+  G.earned=runPoints(G);bankAdd(G.earned.total);
   META.runs++;META.decisions+=G.st.decisions;
   if(over==='survived'){META.surv.loc[G.p.loc]=1;META.surv.bg[G.p.bg]=1;}else{META.deaths++;}
   evalAch();

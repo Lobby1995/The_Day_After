@@ -17,6 +17,7 @@ module.exports={
     'js/content/events/forks-and-encounters.js',  // base vs nomad, raiders, sieges, zombie encounters
     'js/content/events/loot-and-group.js',        // loot dilemmas and companion events
     'js/content/events/country.js',               // events that belong to one country only
+    'js/content/events/armed.js',                 // what the rifle and the rounds are for
     'js/content/events/companions.js',            // one personal story per companion
     'js/content/events/echoes.js',                // early choices coming back later
     'js/content/dilemmas.js',                     // choices with a price and no dice, and what they cost later
@@ -37,6 +38,7 @@ module.exports={
     'js/content/story/journalist.js',                 // character arc: the journalist, "The Record"
     'js/content/story/firefighter.js',                 // character arc: the firefighter, "The Line"
     'js/content/story/mechanic.js',                 // character arc: the mechanic, "The Machine"
+    'js/content/story/pairs.js',                  // every profession in every country: one chapter per pair
     'js/engine/risk.js',                          // turns "certain" options into gambles
     'js/engine/meta.js',                          // achievements and trophies (saved between runs)
     'js/engine/game.js',                          // newGame, pickEvent, chance, choose, advanceDay
@@ -48,6 +50,7 @@ module.exports={
     ...hebrew,
     'js/i18n/ui-strings.js',      // every interface string, English + Hebrew, and language helpers
     'js/ui/trophies.js',          // trophy room and pop-ups
+    'js/ui/share.js',             // the share card at the end of a run
     'js/ui/screens.js',           // title, creation, play, ending, wiring (must be last: it starts the app)
   ],
   styles:[

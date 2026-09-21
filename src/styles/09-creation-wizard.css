@@ -21,3 +21,12 @@ button.cchip:hover{border-color:var(--accent)}
 .sumrow .sk{color:var(--secondary);font-family:var(--f-head);font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;min-width:110px}
 .sumrow .sv{flex:1;font-size:1.05rem;font-weight:500}
 @media(max-width:560px){.stepper li span{display:none}.stepper li.cur span{display:inline}.sumrow{flex-wrap:wrap}}
+/* supplies shop and survival points */
+.bankbar{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 16px;padding:12px 16px;margin-bottom:14px;background:var(--surface);border:2px solid var(--border);border-inline-start:6px solid var(--accent);border-radius:4px}
+.bankbar .num{font-size:1.5rem;color:var(--accent)}.bankbar .bl{margin-inline-start:auto;color:var(--muted);font-size:.88rem}
+.shoplist{display:grid;gap:8px}
+.shoprow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;background:var(--surface);border:2px solid var(--border);border-radius:4px}
+.shoprow .sname{display:grid}.shoprow .sname small{color:var(--muted)}
+.sctl{display:flex;align-items:center;gap:10px}.sctl .sn{min-width:1.6ch;text-align:center;font-size:1.3rem}
+.ptlist{display:grid;gap:6px}.ptrow{display:flex;justify-content:space-between;gap:12px;font-size:.92rem}.ptrow.tot{border-top:1px solid var(--border);padding-top:6px;font-weight:600}
+
