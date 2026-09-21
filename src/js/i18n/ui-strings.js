@@ -176,7 +176,11 @@ Object.assign(UI.he,{shareBtn:'שיתוף',shareH:'לשתף את הריצה',sha
 
 /* the world view */
 Object.assign(UI.en,{worldBtn:'World',worldAria:'A view of the place you are in. Walk with the arrow keys or by tapping.',
-  worldHint:'Arrow keys or a tap to walk. Step into the glowing ring, or press Go.',worldGo:'Go there',worldSkip:'Skip to the text'});
+  worldHint:'Arrow keys or a tap to walk. Reach the glowing ring before the zombies reach you.',worldGo:'Go there',worldSkip:'Skip to the text'});
 Object.assign(UI.he,{worldBtn:'עולם',worldAria:'מבט על המקום שבו אתם נמצאים. הולכים עם מקשי החצים או בנגיעה.',
-  worldHint:'מקשי החצים או נגיעה כדי ללכת. להיכנס לטבעת הזוהרת, או ללחוץ על ״ללכת לשם״.',worldGo:'ללכת לשם',worldSkip:'לדלג לטקסט'});
+  worldHint:'מקשי החצים או נגיעה כדי ללכת. להגיע לטבעת הזוהרת לפני שהזומבים מגיעים אליכם.',worldGo:'ללכת לשם',worldSkip:'לדלג לטקסט'});
+
+/* zombies in the world view */
+Object.assign(UI.en,{worldZ:'Zombies in this place',worldBite:(h,i)=>`A zombie got you: \u2212${h} health, +${i} infection.`});
+Object.assign(UI.he,{worldZ:'זומבים במקום הזה',worldBite:(h,i)=>`זומבי תפס אתכם: \u2212${h} בריאות, +${i} הידבקות.`});
 

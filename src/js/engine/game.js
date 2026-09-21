@@ -148,6 +148,14 @@ function firePerks(members){
   return out;
 }
 
+/* a zombie in the world view reaches you: 3 to 5 health and 5 infection. it never kills outright: it leaves you standing, at 1 health at the least. */
+function zombieBite(rand){
+  const p=G.p,h0=p.hp,i0=p.inf,h=3+Math.floor((rand||Math.random)()*3);
+  p.hp=Math.max(1,p.hp-h);p.inf=Math.min(99,p.inf+5);
+  G.st.bites=(G.st.bites||0)+1;
+  return{hp:h0-p.hp,inf:p.inf-i0};
+}
+
 /* choices made earlier that shift the odds of later ones, by the stat being tested. keys are flags. */
 const FLAG_MODS={
   dil_armed:{strength:1,charisma:-1},   // took the rifle: harder to beat, harder to trust

@@ -189,10 +189,9 @@ function triage(){
 }
 function renderPlay(){
   view='play';
-  /* the question and its choices come first; the survivor's condition sits underneath */
+  /* the question and its choices are the main column. the side column reads top to bottom: your condition, the report on the world, your file */
   main().innerHTML=`<section class="play">
-    <div class="play-grid"><div><div id="worldslot"></div><div id="overnight"></div><div class="stage" id="stage"></div></div><aside class="side" id="side"></aside></div>
-    <div class="vitals" id="vitals"></div></section>`;
+    <div class="play-grid"><div><div id="worldslot"></div><div id="overnight"></div><div class="stage" id="stage"></div></div><aside class="side"><div class="vitals" id="vitals"></div><div class="sidebody" id="side"></div></aside></div></section>`;
   worldSync();refresh();applyLang();
 }
 function refresh(){renderVitals();renderSide();renderStage();paintAll();updateHeader();}
@@ -364,7 +363,8 @@ function doChoose(ci){
     renderStage();
     ROLL.timer=setTimeout(finishRoll,reduced()?500:1800);
   }else refresh();
-  const st=$('stage');if(st&&st.scrollIntoView)st.scrollIntoView({behavior:'smooth',block:'start'});
+  /* in the text view the answer scrolls into place. in the world view the place stays where it is, right above the answer. */
+  const st=$('stage');if(st&&st.scrollIntoView&&!WMODE)st.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function doNext(){
   if(ROLL){clearTimeout(ROLL.timer);ROLL.active=false;}

@@ -1,5 +1,6 @@
 /* side */
 .side{display:grid;gap:22px}
+.sidebody{display:contents}
 .panel{padding:20px 20px 22px;background:var(--surface);border:2px solid var(--border);border-radius:4px;box-shadow:0 10px 24px rgba(0,0,0,.45)}
 .panel.p-world{border-inline-start:5px solid var(--accent)}
 .panel.p-file{border-inline-start:5px solid var(--primary-hover)}

@@ -3,7 +3,7 @@
  * The same game, shown another way. A place is drawn above the question; the question stays hidden until you walk into the
  * glowing ring (or press Go), and then it opens exactly as it always did. Nothing about the choices or the rolls changes.
  */
-let WMODE=false,WOPEN=false,WS=null,WCUR=null,WRAF=0,WLAST=0;
+let WMODE=false,WOPEN=false,WS=null,WCUR=null,WRAF=0,WLAST=0,WMSGT=0;
 try{WMODE=localStorage.getItem('daysafter.world')==='1';}catch(e){}
 
 const worldOn=()=>!!(WMODE&&view==='play'&&G&&G.cur);
@@ -20,7 +20,8 @@ function worldToggle(){
 function worldBoxHtml(){
   return `<div class="worldbox${WOPEN?' open':''}" id="worldbox">
     <canvas id="worldcv" width="${WCW}" height="${WCH}" role="img" aria-label="${esc(t('worldAria'))}"></canvas>
-    <div class="wbar"><span class="wplace">${esc(worldPlace())}</span><span class="whint">${t('worldHint')}</span>
+    <div class="wmsg" id="worldmsg" role="status" aria-live="polite"></div>
+    <div class="wbar"><span class="wplace">${esc(worldPlace())}</span>${WS&&WS.z.length&&!WOPEN?`<span class="wz" title="${esc(t('worldZ'))}">\u{1F9DF} ${WS.z.length}</span>`:''}<span class="whint">${t('worldHint')}</span>
       <button class="btn sm primary" data-act="worldGo">${t('worldGo')}</button><button class="btn sm ghost" data-act="worldSkip">${t('worldSkip')}</button></div></div>`;
 }
 
@@ -30,8 +31,11 @@ function worldSync(){
   if(!WMODE){slot.innerHTML='';WS=null;return;}
   if(!WS||WCUR!==G.cur){
     WCUR=G.cur;
-    WS=worldNew(worldSceneId(G.cur.id),G.p.loc);
+    /* one to three zombies, by how far the outbreak has gone. the same question always gets the same ones. */
+    const n=1+(G.w.outbreak>=35?1:0)+(G.w.outbreak>=70?1:0),seed=(G.w.day*7+G.st.decisions*13+hash(G.cur.id))>>>0;
+    WS=worldNew(worldSceneId(G.cur.id),G.p.loc,{zombies:n,seed});
     WOPEN=!!G.cur.res;                                   // a question that was already answered opens at once
+    if(WOPEN){WS.z=[];WS.frozen=true;}
   }
   slot.innerHTML=worldBoxHtml();
   const cv=$('worldcv');
@@ -47,17 +51,40 @@ function worldApplyStage(){
   const hide=!!(WMODE&&!WOPEN&&!(G.cur&&G.cur.res));
   st.hidden=hide;
   const box=$('worldbox');if(box&&box.classList)box.classList.toggle('open',!hide);
+  worldFocus();
+}
+/* once the question is open the place shrinks to a strip above it, kept centred on the survivor. the page does not scroll: the place must never leave the screen. */
+function worldFocus(){
+  const cv=$('worldcv');if(!cv||!cv.style||!WS)return;
+  if(!(WOPEN||(G.cur&&G.cur.res))){cv.style.objectPosition='';return;}
+  const bw=cv.clientWidth||0,bh=230;
+  if(!bw){cv.style.objectPosition='50% 60%';return;}
+  const sc=bw/WCW,py=WS.oy+(WS.fx+WS.fy)*WTH/2-48;
+  const p=Math.max(0,Math.min(1,(py*sc-bh/2)/(WCH*sc-bh)));
+  cv.style.objectPosition='50% '+Math.round(p*100)+'%';
 }
 function worldOpen(){
   if(WOPEN)return;
-  WOPEN=true;renderStage();
-  const st=$('stage');if(st&&st.scrollIntoView)st.scrollIntoView({behavior:worldReduced()?'auto':'smooth',block:'start'});
+  WOPEN=true;
+  if(WS){WS.frozen=true;WS.z.forEach(z=>{z.path=[];z.walking=false;});}      // once you are at the question, nothing moves on you
+  renderStage();
+}
+/* a short message over the place, for a bite */
+function worldMessage(text){
+  const m=$('worldmsg');if(!m)return;
+  m.textContent=text;if(m.classList)m.classList.add('show');
+  if(typeof setTimeout==='function'){clearTimeout(WMSGT);WMSGT=setTimeout(()=>{const e=$('worldmsg');if(e&&e.classList)e.classList.remove('show');},4200);if(WMSGT&&WMSGT.unref)WMSGT.unref();}
 }
 
 /* one step of time: walk, and open the question if you have arrived */
 function worldPump(dt){
   if(!WS)return;
   worldTick(WS,dt);
+  /* a bite costs health and adds infection: the same numbers the rest of the game uses */
+  while(WS.events.length){
+    const e=WS.events.shift();
+    if(e.type==='bite'){const r=zombieBite();worldMessage(t('worldBite',r.hp,r.inf));renderVitals();}
+  }
   if(WS.arrived&&!WOPEN)worldOpen();
 }
 function worldFrame(now){

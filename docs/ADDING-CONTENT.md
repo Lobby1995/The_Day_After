@@ -139,3 +139,11 @@ A place is a small map in `src/js/ui/world-scenes.js`, one character per tile: `
 
 `tests/world.test.js` checks that every place is a well-formed map, that the question can be reached from the entrance, that every event has a place, and that a whole game can be played through the world view. `npm run preview` draws every place to a PNG in `/tmp/preview`, so a change can be looked at without a browser.
 
+### Which place a question happens in
+
+`worldSceneId` (in `world-scenes.js`) decides it, in this order: the prologue's rooms and homes; a profession's own chapters (`st_`, `te_`, `so_`, `po_`, `jo_`, `ff_`, `me_` and `pair_<profession>_...` use that profession's room, the doctor's use the ward); and then the `WPLACE` table, which names a place for each event id. Anything not named is the street. When you add an event, add it to `WPLACE` so it happens where the text says. `tests/world.test.js` fails if a place is never used, so a new place needs at least one event.
+
+### Zombies
+
+`worldNew(id, country, {zombies, seed})` places one to three zombies on floor tiles far from the entrance and the question. They walk (`WZSPEED`, slower than you: `WSPEED`) straight at you, tile by tile, and each bites once (`zombieBite` in `engine/game.js`: 3 to 5 health, 5 infection, never lethal). They wait `WZDELAY` before they start and freeze when the question opens. How many there are depends on the outbreak (`world-ui.js`).
+

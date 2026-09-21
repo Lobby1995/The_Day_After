@@ -2,12 +2,14 @@
 const createApp=require('./helpers/fake-dom');
 const {api,els}=createApp();
 const problems=[];const bad=m=>problems.push(m);
+/* answer with the first option that can be chosen: some cost ammunition or food the survivor may not have */
+const answer=()=>{const G=api.G;for(const o of G.cur.opts){api.click('choose',undefined,o);if(G.cur.res)return true;}return false;};
 
 for(const lang of ['en','he']){
   api.click('lang',lang);api.click('road','5');api.click('randall');api.click('start');
   let guard=0;
   while(guard++<300){
-    if(!api.G.cur.res)api.click('choose',undefined,api.G.cur.opts[0]);
+    if(!api.G.cur.res)answer();
     api.click('skip');api.click('next');
     if(api.view==='end')break;
   }

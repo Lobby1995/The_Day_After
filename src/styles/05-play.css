@@ -90,7 +90,6 @@
 .chip.good{border-inline-start-color:var(--primary-hover)}
 .chip.bad{border-inline-start-color:var(--accent)}
 .after{margin-top:28px}
-.play-grid + .vitals{margin-top:30px;margin-bottom:0}
 .tcol .role.unk{background:transparent;color:var(--muted);border:1px dashed var(--border)}
 
 /* the world view */
@@ -102,4 +101,20 @@
 .whint{flex:1;min-width:14ch;color:var(--muted);font-size:.85rem}
 .worldbox.open .whint,.worldbox.open [data-act="worldGo"],.worldbox.open [data-act="worldSkip"]{display:none}
 .stage[hidden]{display:none}
+
+/* the side column: your condition first, then the report on the world, then your file. the condition block is narrow here, so it stacks */
+.side .vitals{grid-template-columns:1fr;margin-bottom:0}
+.side .daybox{flex-direction:row;align-items:baseline;gap:12px;padding:12px 18px;border-inline-end:0;border-bottom:2px solid #000;min-width:0}
+.side .daybox b{font-size:2.4rem}
+.side .vmain{padding:16px 18px;gap:16px}
+.side .vbars{grid-template-columns:1fr;gap:14px}
+.side .vtop{flex-direction:column;align-items:flex-start}
+.side .trio{grid-template-columns:1fr}
+.side .tcol,.side .tcol:first-child{padding:14px 0 6px}
+.side .tcol+.tcol{border-inline-start:0;border-top:1px solid var(--border)}
+.side .vact .pr{margin-inline-start:0}
+.worldbox{position:relative}
+.wmsg{display:none;position:absolute;top:10px;inset-inline-start:10px;max-width:calc(100% - 20px);padding:7px 14px;background:rgba(122,20,16,.94);color:#fff;border:2px solid #000;border-radius:3px;font-size:.92rem}
+.wmsg.show{display:block}
+.wz{font-family:var(--f-head);color:#c96a5a}
 

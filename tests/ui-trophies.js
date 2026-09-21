@@ -6,7 +6,7 @@ for(const lang of ['en','he']){
   const seen={sit:false};
   let guard=0;
   while(guard++<200){
-    if(!api.G.cur.res){ if(els.stage.innerHTML.includes('class="sit"'))seen.sit=true; api.click('choose',undefined,api.G.cur.opts[0]); }
+    if(!api.G.cur.res){ if(els.stage.innerHTML.includes('class="sit"'))seen.sit=true; {const G=api.G;for(const o of G.cur.opts){api.click('choose',undefined,o);if(G.cur.res)break;}} }
     api.click('skip'); api.click('next'); if(api.view==='end')break;
   }
   api.click('trophies');check('troom '+lang);
