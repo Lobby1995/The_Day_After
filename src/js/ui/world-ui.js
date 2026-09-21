@@ -37,7 +37,7 @@ function worldSync(){
     /* one to three zombies, by how far the outbreak has gone. the same question always gets the same ones. */
     const sid=worldSceneId(G.cur.id),n=worldZombieCount(G.cur.id,sid,G.w.outbreak),seed=(G.w.day*7+G.st.decisions*13+hash(G.cur.id))>>>0;
     /* the first scenes of the story stay small and calm; everything after is bigger, so the way to the question is longer */
-    WS=worldNew(sid,G.p.loc,{zombies:n,seed,grow:!/^pro_/.test(G.cur.id),stealth:G.p.stats.stealth});
+    WS=worldNew(sid,G.p.loc,{zombies:n,seed,grow:!/^pro_/.test(G.cur.id),stealth:G.p.stats.stealth,traits:G.p.traits});
     WOPEN=!!G.cur.res;                                   // a question that was already answered opens at once
     if(WOPEN){WS.z=[];WS.frozen=true;}
   }

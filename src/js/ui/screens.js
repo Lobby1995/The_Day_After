@@ -8,7 +8,7 @@ const sprGame=()=>{const p=G.p;return{sex:p.sex,age:p.age,skin:p.skin,seed:p.see
 const canvasHtml=(o,scale,cls,extra)=>`<canvas class="spr ${cls||''}" width="24" height="48" style="width:${24*scale}px;height:${48*scale}px" data-o="${esc(JSON.stringify(o))}" ${extra||''} aria-hidden="true"></canvas>`;
 function paintAll(){document.querySelectorAll('canvas.spr').forEach(cv=>{try{spriteToCanvas(cv,JSON.parse(cv.dataset.o));}catch(e){}});}
 
-let CFG={name:'',auto:true,sex:'m',age:32,loc:'random',bg:'random',road:5,skin:0,buy:{}};
+let CFG={name:'',auto:true,sex:'m',age:32,loc:'random',bg:'random',road:5,skin:0,buy:{},traits:{pos:[],neg:[]}};
 let view='title';
 
 /* ---------- language ---------- */
@@ -65,7 +65,7 @@ function renderTitle(){
 
 /* ---------- creation: one page per step, with a summary that follows you ---------- */
 let CSTEP=0;                                   // 0 who, 1 where, 2 past, 3 ready
-const CSTEPS=['sWho','sWhere','sPast','sShop','sReady'];
+const CSTEPS=['sWho','sWhere','sPast','sTraits','sShop','sReady'];
 const ageBonus=b=>Object.entries(bgObj(b).bonus).map(([k,v])=>`+${v} ${statN(k)}`).join(', ');
 const nmField=()=>{const n=$('nm');if(n)n.value=CFG.name;};
 function stepWho(){return `<h2>${t('hWho')}</h2><p>${t('pWho')}</p>
@@ -85,6 +85,31 @@ function stepPast(){return `<h2>${t('hBg')}</h2><p>${t('pBg')}</p>
       ${BGS.map(b=>`<button class="brow" data-act="bg" data-v="${b.id}">${canvasHtml(sprCreate(b.id),2,'',`data-bgid="${b.id}"`)}<span class="btxt"><span class="nm" data-bgname="${b.id}">${bgN(b.id,CFG.sex)}</span><span class="pk">${bgPerk(b.id)}</span><span class="bn">${ageBonus(b.id)}</span></span></button>`).join('')}
       <button class="brow" data-act="bg" data-v="random">${canvasHtml(sprCreate('?'),2)}<span class="btxt"><span class="nm">${t('random')}</span><span class="pk">${t('pRandomBg')}</span></span></button>
     </div>`;}
+/* the traits page: pick exactly five gifts and five burdens. gifts cost points, burdens give points, and you finish at zero or more. */
+const TR=()=>{CFG.traits=CFG.traits||{pos:[],neg:[]};return CFG.traits;};
+function traitsNeed(){
+  const T=TR(),np=T.pos.length,nn=T.neg.length,left=traitPoints(T);
+  if(np<5)return t('trNeedPos',5-np);
+  if(nn<5)return t('trNeedNeg',5-nn);
+  if(left<0)return t('trNeedPts',-left);
+  return'';
+}
+function traitCard(side,tr){
+  const T=TR(),on=T[side].indexOf(tr.id)>=0,full=!on&&T[side].length>=5,L=LANG==='he'?1:0;
+  return `<button class="tcard ${side}" data-act="trait" data-v="${side}:${tr.id}" aria-pressed="${on}" ${full?'disabled':''}>
+    <span class="tn"><b>${tr.n[L]}</b><i class="tpts">${side==='pos'?'\u2212':'+'}${tr.pts}</i></span><small>${tr.d[L]}</small></button>`;
+}
+function stepTraits(){
+  const T=TR(),left=traitPoints(T),need=traitsNeed();
+  return `<h2>${t('trH')}</h2><p>${t('trP',TRAIT_START)}</p>
+    <div class="ptsbar ${left<0?'neg':''}"><span>${t('trPts')}</span><b class="num" id="trleft">${left}</b>
+      <span class="cnt">${t('trPos')} <b>${T.pos.length}/5</b></span><span class="cnt">${t('trNeg')} <b>${T.neg.length}/5</b></span></div>
+    <p class="small trneed" id="trneed" role="status">${need}</p>
+    <div class="traitcols"><div><h3>${t('trPos')}</h3>${TRAITS.pos.map(x=>traitCard('pos',x)).join('')}</div>
+      <div><h3>${t('trNeg')}</h3>${TRAITS.neg.map(x=>traitCard('neg',x)).join('')}</div></div>`;
+}
+const traitsText=()=>{const T=TR();return traitsValid(T)?[...T.pos,...T.neg].map(id=>traitDef(id).n[LANG==='he'?1:0]).join(', '):t('trNone');};
+
 /* the supplies page: survival points, banked between runs, buy a head start */
 const buyOf=id=>Math.min(SHOP.find(x=>x.id===id).max,Math.max(0,+(CFG.buy||{})[id]||0));
 const buyCost=()=>shopCost(CFG.buy);
@@ -109,7 +134,8 @@ function stepReady(){
     [t('hWho'),`${esc((CFG.name||'').trim()||'?')} \u00b7 ${tt('sexWord',CFG.sex)}, ${CFG.age}`,0],
     [t('hWhere'),CFG.loc==='random'?t('random'):locName(CFG.loc),1],
     [t('hBg'),b?bgN(b.id,CFG.sex):t('random'),2],
-    [t('sShop'),suppliesText(),3]
+    [t('sTraits'),traitsText(),3],
+    [t('sShop'),suppliesText(),4]
   ];
   return `<h2>${t('sReadyH')}</h2><p>${t('sReadyP')}</p>
     <div class="sumlist">${rows.map(r=>`<div class="sumrow"><span class="sk">${r[0]}</span><b class="sv">${r[1]}</b>${r[2]>=0?`<button class="btn sm ghost" data-act="stepGo" data-v="${r[2]}">${t('change')}</button>`:''}</div>`).join('')}</div>`;
@@ -125,17 +151,18 @@ function chipsHtml(){
   if(CSTEP>0)chips.push([`${esc((CFG.name||'').trim()||'?')} \u00b7 ${tt('sexWord',CFG.sex)}, ${CFG.age}`,0]);
   if(CSTEP>1)chips.push([CFG.loc==='random'?t('random'):locName(CFG.loc),1]);
   if(CSTEP>2)chips.push([b?bgN(b.id,CFG.sex):t('random'),2]);
-  if(CSTEP>3&&buyCost()>0)chips.push([suppliesText(),3]);
+  if(CSTEP>3&&traitsValid(TR()))chips.push([t('trChip',5,5),3]);
+  if(CSTEP>4&&buyCost()>0)chips.push([suppliesText(),4]);
   return `<div class="chips-row">${chips.map(c=>c[1]>=0?`<button class="cchip" data-act="stepGo" data-v="${c[1]}">${c[0]}</button>`:`<span class="cchip fixed">${c[0]}</span>`).join('')}</div>`;
 }
 function navHtml(){
   const last=CSTEP===CSTEPS.length-1;
-  return `<div class="wiznav"><button class="btn ghost" data-act="stepBack">${t('back')}</button>${last?`<button class="btn primary" data-act="start">${t('begin')}</button>`:`<button class="btn primary" data-act="stepNext">${t('next')}</button>`}</div>`;
+  return `<div class="wiznav"><button class="btn ghost" data-act="stepBack">${t('back')}</button>${last?`<button class="btn primary" data-act="start">${t('begin')}</button>`:`<button class="btn primary" data-act="stepNext" ${CSTEP===3&&traitsNeed()?'disabled':''}>${t('next')}</button>`}</div>`;
 }
 function renderCreate(){
   view='create';
   if(!CFG.name)CFG.name=randName(CFG.sex);
-  const body=[stepWho,stepWhere,stepPast,stepShop,stepReady][CSTEP]();
+  const body=[stepWho,stepWhere,stepPast,stepTraits,stepShop,stepReady][CSTEP]();
   main().innerHTML=`<section class="wiz"><div class="create-grid"><div>
     <div class="wiztop">${stepperHtml()}<button class="btn sm ghost" data-act="randall">${t('randAll')}</button></div>
     ${chipsHtml()}
@@ -176,7 +203,8 @@ function startFromCreate(){
   const loc=CFG.loc==='random'?pick(LOC_ORDER):CFG.loc;
   const bg=CFG.bg==='random'?pick(BGS).id:CFG.bg;
   const name=(CFG.name||'').trim()||randName(CFG.sex);
-  newGame({name,sex:CFG.sex,age:CFG.age,loc,bg,road:CFG.road,skin:CFG.skin,buy:{...CFG.buy}});
+  if(!traitsValid(TR())){CSTEP=3;return renderCreate();}
+  newGame({name,sex:CFG.sex,age:CFG.age,loc,bg,road:CFG.road,skin:CFG.skin,buy:{...CFG.buy},traits:{pos:[...TR().pos],neg:[...TR().neg]}});
   renderPlay();
 }
 
@@ -447,7 +475,7 @@ function showModal(){
   const b=document.querySelector('[data-act="mSame"]');if(b&&b.focus)b.focus();
 }
 const closeModal=()=>{$('modal').innerHTML='';};
-function freshCfg(road){return{name:'',auto:true,sex:'m',age:32,loc:'random',bg:'random',road:road||5,skin:0,buy:{}};}
+function freshCfg(road){return{name:'',auto:true,sex:'m',age:32,loc:'random',bg:'random',road:road||5,skin:0,buy:{},traits:{pos:[],neg:[]}};}
 
 /* ---------- wiring ---------- */
 document.addEventListener('click',e=>{
@@ -471,9 +499,14 @@ document.addEventListener('click',e=>{
   if(a==='bg'){CFG.bg=v;return updateCreate();}
   
   if(a==='skin'){CFG.skin=+v;return updateCreate();}
-  if(a==='randall'){CFG.sex=pick(['m','f']);CFG.age=18+rnd(43);CFG.name=randName(CFG.sex);CFG.auto=true;CFG.loc='random';CFG.bg='random';CFG.skin=rnd(4);CFG.buy={};CSTEP=CSTEPS.length-1;return renderCreate();}
+  if(a==='randall'){CFG.sex=pick(['m','f']);CFG.age=18+rnd(43);CFG.name=randName(CFG.sex);CFG.auto=true;CFG.loc='random';CFG.bg='random';CFG.skin=rnd(4);CFG.buy={};CFG.traits=traitsRandom();CSTEP=CSTEPS.length-1;return renderCreate();}
   if(a==='buy'){const [id,d]=v.split(':');const it=SHOP.find(x=>x.id===id);if(!it)return;CFG.buy=CFG.buy||{};const n=buyOf(id)+(+d);
     if(n>=0&&n<=it.max){const before=CFG.buy[id]||0;CFG.buy[id]=n;if(buyCost()>(META.bank||0))CFG.buy[id]=before;}
+    return renderCreate();}
+  if(a==='trait'){
+    const [side,id]=v.split(':'),T=TR();if(!T[side]||!traitDef(id))return;
+    const i=T[side].indexOf(id);
+    if(i>=0)T[side].splice(i,1);else if(T[side].length<5)T[side].push(id);
     return renderCreate();}
   if(a==='start')return startFromCreate();
   if(a==='world')return worldToggle();
@@ -484,7 +517,7 @@ document.addEventListener('click',e=>{
   if(a==='shareNative')return nativeShare();
   if(a==='shareCopy')return copyShare();
   if(a==='shareSave')return saveShareImage();
-  if(a==='stepNext'){CSTEP=Math.min(CSTEPS.length-1,CSTEP+1);return renderCreate();}
+  if(a==='stepNext'){if(CSTEP===3&&traitsNeed())return;CSTEP=Math.min(CSTEPS.length-1,CSTEP+1);return renderCreate();}
   if(a==='stepBack'){if(CSTEP===0)return renderTitle();CSTEP--;return renderCreate();}
   if(a==='stepGo'){CSTEP=Math.max(0,Math.min(CSTEPS.length-1,+v));return renderCreate();}
   if(a==='choose')return doChoose(+t0.dataset.i);

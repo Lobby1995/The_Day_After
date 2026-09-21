@@ -153,3 +153,11 @@ A place is a small map in `src/js/ui/world-scenes.js`, one character per tile: `
 
 Every place except the profession rooms, the homes, the cabin and the chapel also exists in a big version (`worldBig` in `world.js`): its inside is repeated and mirrored into a grid, you come in at the far corner, and the question stays where it was, so the way to it is long. The camera follows you (`worldCamera`), and an arrow at the edge of the picture points to the question when it is off screen. A place can override its size with `grow:[nx,ny]`.
 
+## Traits (the fourth page of the creation wizard)
+
+`engine/traits.js`. Eight gifts and eight burdens, `pts` on each; the player takes exactly five of each and must finish with `TRAIT_START` (2) plus what the burdens give, minus what the gifts cost, at zero or more (`traitPoints`, `traitsValid`). Each effect is on something the game already has: stats (`TRAIT_STATS`), healing and infection fading and medicine and food and water (in `advanceDay` and `useMeds`), what an infection costs (`traitFx`), the extra cost of a dangerous move that goes wrong (`dangerTax`), a bite (`zombieBite`), and in the world view noise, sight, running speed and stamina (`traitWorld`). To add a trait, add it to `TRAITS` with its two names and descriptions and wire its effect in one of those places. Then price it: `TRAITS=<id> node tests/balance-sim.js 2500 smart 15` prints survival with that one trait, and the price is about one point per 1.5 to 2 percent of survival. The prices were set that way, so a random valid choice is neutral on average. `tests/traits.test.js` checks every effect.
+
+## How fast the outbreak rises
+
+`OUTPY` in `engine/game.js`: outbreak points per year, by track (5 years: 8, 15 years: 3, 20 years: 1.5). A game measured with an immortal survivor rose 7.1, 2.6 and 1.3 points a year, a little under, because the United States and Brazil start high and hit the ceiling at 100. `tests/traits.test.js` checks the rates.
+

@@ -198,6 +198,32 @@ if(w.worldNew('room_doctor','uk').weather||w.worldNew('room_doctor','uk').tint)b
     const last=W.path[W.path.length-1];if(!last||last[0]!==target[0]||last[1]!==target[1])bad('the tap landed on a different tile: '+JSON.stringify(last)+' vs '+target[0]+','+target[1]);}
 }
 
+/* 3h. running wears you out, and the traits change how the world treats you */
+{
+  const mk=(traits)=>{const W=w.worldNew('street','uk',{zombies:0,traits});return W;};
+  const secondsToWinded=(traits)=>{const W=mk(traits);W.walking=true;let t=0;for(;t<60000&&!W.winded;t+=50)w.worldStamina(W,50,true);return t/1000;};
+  const base=secondsToWinded([]),athletic=secondsToWinded(['athletic']),unfit=secondsToWinded(['unfit']);
+  if(base<3.5||base>6)bad('a plain survivor should run for about 4.5 seconds before being winded: '+base);
+  if(!(athletic>base*1.4))bad('an athlete runs a lot longer: '+athletic+' vs '+base);
+  if(!(unfit<base*.85))bad('someone out of shape runs a lot less: '+unfit+' vs '+base);
+  /* winded: back to walking until some breath is back */
+  {const W=mk([]);W.mode='run';W.walking=true;W.stam=0;W.winded=true;w.worldTick(W,50);
+   if(W.eff!=='walk')bad('a winded survivor cannot run');
+   W.walking=false;for(let i=0;i<40;i++)w.worldTick(W,50);
+   if(W.winded)bad('after two seconds of rest the survivor should be able to run again');}
+  /* running that is not winded stays running, and walking never wears you out */
+  {const W=mk([]);W.mode='walk';W.walking=true;for(let i=0;i<200;i++)w.worldStamina(W,50,false);if(W.stam<100)bad('walking must not use stamina');}
+  /* sight and noise */
+  {const P=(traits,mode)=>w.worldPresence({mode,stealth:5,walking:true,tm:w.traitWorld(traits)});
+   if(!(P(['unseen'],'walk').sight<P([],'walk').sight*.7))bad('inconspicuous should be seen from much less far');
+   if(!(P(['conspicuous'],'walk').sight>P([],'walk').sight*1.3))bad('conspicuous should be seen from much farther');
+   if(!(P(['graceful'],'run').noise<P([],'run').noise*.7))bad('graceful should be much quieter');
+   if(!(P(['clumsy'],'walk').noise>P([],'walk').noise*1.2))bad('clumsy should be louder');}
+  /* run speed: an athlete gets there first */
+  {const time=(traits)=>{const W=w.worldNew('street','uk',{zombies:0,traits});W.mode='run';w.worldGo(W);let t=0;for(;t<60000&&!W.arrived;t+=50)w.worldTick(W,50);return t;};
+   if(!(time(['athletic'])<time([])))bad('an athlete runs faster');}
+}
+
 /* 3g. running gets there sooner than walking, walking sooner than sneaking */
 {
   const time=(mode)=>{const W=w.worldNew('street','uk',{zombies:0});W.mode=mode;w.worldGo(W);let t=0;for(;t<60000&&!W.arrived;t+=50)w.worldTick(W,50);return t;};
@@ -207,6 +233,7 @@ if(w.worldNew('room_doctor','uk').weather||w.worldNew('room_doctor','uk').tint)b
 
 /* 3d. what a bite costs: 3 to 5 health, 5 infection, and it never kills outright */
 {
+  api.G.p.traits=[];      // no gifts or burdens: the plain numbers
   const bite=(r)=>{api.G.p.hp=60;api.G.p.inf=10;const out=api.zombieBite(()=>r);return[out.hp,api.G.p.hp,out.inf,api.G.p.inf];};
   let b=bite(0);   if(b[0]!==3||b[1]!==57||b[2]!==5||b[3]!==15)bad('the smallest bite is 3 health and 5 infection: '+b);
   b=bite(.5);      if(b[0]!==4)bad('a middling bite is 4 health: '+b);
@@ -252,7 +279,7 @@ class Watch extends SoftCtx{constructor(a,b){super(a,b);this.bigRects=0;}
 ids.forEach(id=>{
   ['uk','japan'].forEach((loc,li)=>{
     try{
-      const W=w.worldNew(id,loc,{grow:li===1,zombies:4,seed:3}),c=new Watch(w.WCW,w.WCH);
+      const W=w.worldNew(id,loc,{grow:li===1,zombies:4,seed:3,traits:li===1?['ears','unfit']:[]}),c=new Watch(w.WCW,w.WCH);
       W.z.forEach((z,i)=>{z.state=['chase','investigate','search','idle'][i%4];});     // draw every kind of marker
       for(let i=0;i<10;i++)w.worldTick(W,50);
       w.worldDraw(c,W,900);
@@ -266,6 +293,7 @@ ids.forEach(id=>{
 /* 6b. a bite in the game: health and infection move, the meters update, and the player is told */
 {
   api.click('world');
+  api.G.p.traits=[];
   const hp0=api.G.p.hp,inf0=api.G.p.inf,bites0=api.G.st.bites||0;
   api.WS.zdelay=0;api.WS.frozen=false;
   api.WS.z=[{x:api.WS.cx,y:api.WS.cy,fx:api.WS.fx,fy:api.WS.fy,path:[],spawn:[0,0],stun:0,spent:false,walking:false,face:1,sex:'m',age:30,skin:0,seed:1,bg:'student'}];

@@ -2,6 +2,6 @@
 const {engineSource}=require('../../scripts/build');
 module.exports=function loadEngine(){
   const src=engineSource()+`
-;return {get G(){return G},newGame,choose,nextStep,useMeds,avail,chance,EVENTS,EVMAP,LOC_ORDER,BGS,pick,rnd,evText,evTitle,timeOf,HEV,HE,previewChips,getView,ACH,TRO,get META(){return META},sitLine,bankAdd,runPoints,finishRun,evalAch,shopCost,SHOP,PERKS};`;
+;return {get G(){return G},newGame,choose,nextStep,useMeds,avail,chance,EVENTS,EVMAP,LOC_ORDER,BGS,pick,rnd,evText,evTitle,timeOf,HEV,HE,previewChips,getView,ACH,TRO,get META(){return META},sitLine,bankAdd,runPoints,finishRun,evalAch,shopCost,SHOP,PERKS,advanceDay,applyFx,zombieBite,TRAITS,TRAIT_START,traitPoints,traitsValid,traitsRandom,traitWorld,traitDef,hasTrait,OUTPY,STATS,TRAIT_FOOD};`;
   return new Function(src)();
 };

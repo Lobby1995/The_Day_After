@@ -56,8 +56,8 @@ function worldSpawn(W,n,seed){
 }
 /* what you give away: how far you can be seen, how far you can be heard */
 function worldPresence(W){
-  const mode=W.mode||'walk',st=W.stealth==null?5:W.stealth,mult=Math.max(.6,1.25-.05*st);
-  return{sight:WSIGHT[mode]*mult,noise:(W.walking?WNOISE[mode]:WNOISE.still)*mult};
+  const mode=W.eff||W.mode||'walk',st=W.stealth==null?5:W.stealth,mult=Math.max(.6,1.25-.05*st),tm=W.tm||{sight:1,noise:1};
+  return{sight:WSIGHT[mode]*mult*tm.sight,noise:(W.walking?WNOISE[mode]:WNOISE.still)*mult*tm.noise};
 }
 function wAlert(W,z){
   W.z.forEach(o=>{

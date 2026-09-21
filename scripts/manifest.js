@@ -12,6 +12,7 @@ module.exports={
   /* 1. the rules of the game: data, events, risk, achievements, game loop. No DOM in here. */
   engine:[
     'js/engine/core.js',                          // constants, countries, backgrounds, stats, defEv() helper
+    'js/engine/traits.js',                        // five gifts and five burdens, with points
     'js/content/events/base.js',                  // openers, story arcs, everyday encounters
     'js/content/events/time-spanning.js',         // year review, winter, planting, settlements
     'js/content/events/forks-and-encounters.js',  // base vs nomad, raiders, sieges, zombie encounters

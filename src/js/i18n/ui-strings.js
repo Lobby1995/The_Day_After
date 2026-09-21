@@ -188,3 +188,11 @@ Object.assign(UI.he,{worldZ:'זומבים במקום הזה',worldBite:(h,i)=>`�
 Object.assign(UI.en,{worldMode_walk:'Walk',worldMode_sneak:'Sneak',worldMode_run:'Run',worldModeTip:'Walk, sneak (quiet, slow) or run (fast, loud). Hold Shift to run and C to sneak.'});
 Object.assign(UI.he,{worldMode_walk:'הליכה',worldMode_sneak:'התגנבות',worldMode_run:'ריצה',worldModeTip:'הליכה, התגנבות (שקט ואיטי) או ריצה (מהיר ורועש). Shift לריצה ו־C להתגנבות.'});
 
+/* the traits page */
+Object.assign(UI.en,{sTraits:'Traits',trH:'Traits',trP:n=>`Choose exactly five gifts and five burdens. A gift costs points, a burden gives points, and you have to finish at zero or more. You start with ${n}.`,
+  trPts:'Points',trPos:'Gifts',trNeg:'Burdens',trNone:'not chosen yet',trChip:(a,b)=>`${a} gifts, ${b} burdens`,
+  trNeedPos:n=>`Choose ${n} more ${n===1?'gift':'gifts'}.`,trNeedNeg:n=>`Choose ${n} more ${n===1?'burden':'burdens'}.`,trNeedPts:n=>`You are ${n} points short: take a heavier burden or drop a gift.`});
+Object.assign(UI.he,{sTraits:'תכונות',trH:'תכונות',trP:n=>`בוחרים בדיוק חמישה יתרונות וחמישה חסרונות. יתרון עולה נקודות, חיסרון נותן נקודות, ובסוף צריך להישאר באפס או יותר. מתחילים עם ${n}.`,
+  trPts:'נקודות',trPos:'יתרונות',trNeg:'חסרונות',trNone:'עוד לא נבחרו',trChip:(a,b)=>`${a} יתרונות, ${b} חסרונות`,
+  trNeedPos:n=>`לבחור עוד ${n} ${n===1?'יתרון':'יתרונות'}.`,trNeedNeg:n=>`לבחור עוד ${n} ${n===1?'חיסרון':'חסרונות'}.`,trNeedPts:n=>`חסרות ${n} נקודות: לקחת חיסרון כבד יותר או לוותר על יתרון.`});
+

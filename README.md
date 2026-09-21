@@ -10,6 +10,7 @@ Pick a country, a past and an age, then decide how to live through the end of th
 - 7 countries that start at different points of the collapse, each with events that never appear anywhere else
 - 8 backgrounds (doctor, soldier, mechanic...), age and skin variants, pixel-art portraits drawn in code
 - 3 roads: 5, 15 or 20 years (about 20, 36 or 48 decisions)
+- Traits: before the supplies, choose exactly five gifts and five burdens from eight of each. Gifts cost points, burdens give points, and you finish at zero or more, like Project Zomboid. The outbreak rises by 8 points a year on the 5-year track, 3 on the 15-year and 1.5 on the 20-year
 - Survival points and a supplies shop: every run earns points (up to 1000 can be banked), spent on food, water, medicine, ammunition or a rifle before the next run
 - A world view: press World in the header and the game is drawn as a small isometric place (29 of them: rooms for every profession, a ward, a chapel, a harbor, a rooftop, a cellar, a checkpoint and more, chosen by what the question is about). You walk (arrow keys, WASD, or a tap) to the glowing ring, and the question opens there. Zombies see and hear: hold Shift to run, C to sneak, keep quiet and out of sight. How many there are depends on how far the outbreak has gone. A bite costs 3 to 5 health and 5 infection. Every place after the story's first scenes is bigger, with a longer way to the question. Same game underneath: same questions, same rolls
 - Companions with hidden gifts that arrive by the number of choices, and a share card at the end of every run

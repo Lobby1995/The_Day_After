@@ -4,7 +4,7 @@ const N=+process.argv[2]||1000,strat=process.argv[3]||'smart',road=+process.argv
 const res={};const byLoc={};const evSeen={};const errs=[];let days=[];let qTot=0,qSafe=0,catN={country:0,story:0,echo:0,other:0};const achC={};let toastN=0,troN=0;let settledCt=0,baseCt=0,nomadCt=0,grpAvg=0,lootCt=0,maxRep={};
 for(let g=0;g<N;g++){
   const loc=E.pick(E.LOC_ORDER),bg=E.pick(E.BGS).id,age=18+E.rnd(43);
-  E.newGame({name:'T'+g,sex:'m',age,loc,bg,road,skin:0});
+  E.newGame({name:'T'+g,sex:'m',age,loc,bg,road,skin:0,traits:process.env.TRAITS==='random'?E.traitsRandom():process.env.TRAITS?{pos:process.env.TRAITS.split(',').filter(x=>E.TRAITS.pos.some(t=>t.id===x)),neg:process.env.TRAITS.split(',').filter(x=>E.TRAITS.neg.some(t=>t.id===x))}:undefined});
   let guard=0;const rep={};
   try{while(guard++<800){
     const G=E.G,V=E.getView();evSeen[G.cur.id]=(evSeen[G.cur.id]||0)+1;rep[G.cur.id]=(rep[G.cur.id]||0)+1;

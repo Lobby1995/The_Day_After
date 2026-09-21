@@ -121,7 +121,7 @@ function worldNew(id,loc,opt){
   /* outdoors, the country decides the weather and the mood; indoors, nothing does */
   const out=S.outdoor&&WWEATHER[loc]?WWEATHER[loc]:{};
   const W={S,id:S.id,weather:out.fx||null,tint:S.tint||out.tint||null,z:[],events:[],zdelay:WZDELAY,hurt:0,flash:0,frozen:false,ox:0,oy:0,
-    mode:'walk',stealth:opt&&opt.stealth!=null?opt.stealth:5,
+    mode:'walk',eff:'walk',stam:100,winded:false,tm:traitWorld(opt&&opt.traits),stealth:opt&&opt.stealth!=null?opt.stealth:5,
     cx:S.start[0],cy:S.start[1],fx:S.start[0]+.5,fy:S.start[1]+.5,path:[],face:1,t:0,walking:false,goal:null,arrived:false,near:false,queue:null};
   worldCamera(W,0,true);
   worldSpawn(W,opt&&opt.zombies||0,opt&&opt.seed||1);
@@ -182,19 +182,32 @@ function worldTap(W,mx,my){
   if(!p)return false;
   W.path=p;W.goal=null;W.queue=null;return true;
 }
+/* running wears you out. at zero you are winded and can only walk until you have got some breath back. */
+function worldStamina(W,dt,running){
+  const drain=(W.tm&&W.tm.drain)||1;
+  if(running){W.stam=Math.max(0,W.stam-22*drain*dt/1000);if(W.stam<=0)W.winded=true;}
+  else W.stam=Math.min(100,W.stam+(W.walking?9:16)*dt/1000);
+  if(W.winded&&W.stam>=25)W.winded=false;
+}
 function worldTick(W,dt){
   W.t+=dt;
+  W.eff=(W.mode==='run'&&W.winded)?'walk':(W.mode||'walk');          // winded: you cannot run
   const S=W.S;
   if(W.path.length){
-    const n=W.path[0],tx=n[0]+.5,ty=n[1]+.5,dx=tx-W.fx,dy=ty-W.fy,d=Math.hypot(dx,dy),step=WSPEED*(WMODESPEED[W.mode]||1)*dt/1000;
-    const sdx=dx-dy;if(sdx>.01)W.face=1;else if(sdx<-.01)W.face=-1;
-    if(d<=step){W.fx=tx;W.fy=ty;W.cx=n[0];W.cy=n[1];W.path.shift();}else{W.fx+=dx/d*step;W.fy+=dy/d*step;}
+    /* walk along the path; distance left over at a tile carries into the next one, so speed does not depend on the frame rate */
+    let rem=WSPEED*(WMODESPEED[W.eff]||1)*(W.eff==='run'?((W.tm&&W.tm.runSpeed)||1):1)*dt/1000;
+    while(rem>1e-9&&W.path.length){
+      const n=W.path[0],tx=n[0]+.5,ty=n[1]+.5,dx=tx-W.fx,dy=ty-W.fy,d=Math.hypot(dx,dy),sdx=dx-dy;
+      if(sdx>.01)W.face=1;else if(sdx<-.01)W.face=-1;
+      if(d<=rem){W.fx=tx;W.fy=ty;W.cx=n[0];W.cy=n[1];W.path.shift();rem-=d;}else{W.fx+=dx/d*rem;W.fy+=dy/d*rem;rem=0;}
+    }
     W.walking=true;
   }else{
     W.walking=false;
     if(W.queue){const q=W.queue;W.queue=null;worldStep(W,q[0],q[1]);}
   }
   if(!W.path.length&&W.cx===S.spot[0]&&W.cy===S.spot[1])W.arrived=true;
+  worldStamina(W,dt,W.walking&&W.eff==='run');
   W.near=Math.hypot(W.fx-(S.spot[0]+.5),W.fy-(S.spot[1]+.5))<2.2;
   if(!W.frozen)worldZombies(W,dt);
   worldCamera(W,dt);
@@ -276,6 +289,16 @@ function worldDraw(c,W,now){
   /* the arrow over the question */
   {const sp=S.spot,q=wIso(sp[0]+.5,sp[1]+.5),ax=D.ox+q[0],ay=D.oy+q[1]-96-Math.sin(now/260)*6;
    wPoly(c,[[ax-14,ay-16],[ax+14,ay-16],[ax,ay+6]],'#c27803');wPoly(c,[[ax-14,ay-16],[ax+14,ay-16],[ax,ay+6]],'#000',.15);}
+  /* keen hearing: zombies close by are marked even where a wall hides them */
+  if(W.tm&&W.tm.ears)W.z.forEach(z=>{
+    if(z.spent||Math.hypot(z.fx-W.fx,z.fy-W.fy)>7)return;
+    const q=wIso(z.fx,z.fy),pts=[];for(let i=0;i<16;i++){const a=i/16*Math.PI*2;pts.push([D.ox+q[0]+Math.cos(a)*11,D.oy+q[1]-3+Math.sin(a)*5]);}
+    wPoly(c,pts,'#e0432f',.55);
+  });
+  /* stamina, while it is not full */
+  if(W.stam<99.5||W.eff==='run'){const bw=150,x0=24,y0=WCH-40,f=Math.max(0,Math.min(1,W.stam/100));
+    c.fillStyle='#000';c.fillRect(x0-2,y0-2,bw+4,16);c.fillStyle='#2a2a2a';c.fillRect(x0,y0,bw,12);
+    c.fillStyle=W.winded?'#e0432f':'#c27803';c.fillRect(x0,y0,Math.round(bw*f),12);}
   /* when the question is off screen (a big place), an arrow at the edge of the picture points toward it */
   {const sp=S.spot,q=wIso(sp[0]+.5,sp[1]+.5),px=D.ox+q[0],py=D.oy+q[1]-40,m=46;
    if(px<m||px>WCW-m||py<m||py>WCH-m){

@@ -29,6 +29,9 @@ function load(){
 function newGame(cfg){
   const loc=LOCS[cfg.loc],bg=bgObj(cfg.bg),road=ROADS[cfg.road]||ROADS[5];
   const stats=calcStats(cfg.age,cfg.bg);
+  /* the five gifts and five burdens chosen before the run */
+  const sel=cfg.traits||{pos:[],neg:[]},traits=[...(sel.pos||[]),...(sel.neg||[])].filter(id=>traitDef(id));
+  traits.forEach(id=>{const m=TRAIT_STATS[id];if(m)for(const k in m)stats[k]=clamp(stats[k]+m[k],1,10);});
   const sup={...loc.sup},flags={...loc.flags};
   const bought=applyPurchases(cfg.buy,sup,flags);
   if(bg.id==='soldier'){sup.ammo+=3;flags.armed=1;}
@@ -41,7 +44,7 @@ function newGame(cfg){
   const maxHp=50+stats.health*5;
   let h=7;const nm=cfg.name||'x';for(let i=0;i<nm.length;i++)h=(h*31+nm.charCodeAt(i))>>>0;
   G={v:4,cfg:{...cfg},total:road.turns,mpt:road.mpt,scale:road.turns/20,
-     p:{name:cfg.name,sex:cfg.sex,age:cfg.age,skin:cfg.skin|0,seed:h,loc:cfg.loc,bg:cfg.bg,stats,hp:maxHp,maxHp,inf:0,morale:70,humanity:50,sup,group:[],marks:[]},
+     p:{name:cfg.name,sex:cfg.sex,age:cfg.age,skin:cfg.skin|0,seed:h,loc:cfg.loc,bg:cfg.bg,stats,hp:maxHp,maxHp,inf:0,morale:70,humanity:50,sup,group:[],marks:[],traits},
      w:{day:1,outbreak:loc.outbreak,order:loc.order},
      flags,fday:{},bought,st:freshStats(),toasts:[],seen:[],recent:[],log:[],notes:[],cur:null,over:null,last:null};
   G.pro=prologueFor(G.p).filter(id=>EVMAP[id]);
@@ -150,11 +153,17 @@ function firePerks(members){
 
 /* a zombie in the world view reaches you: 3 to 5 health and 5 infection. it never kills outright: it leaves you standing, at 1 health at the least. */
 function zombieBite(rand){
-  const p=G.p,h0=p.hp,i0=p.inf,h=3+Math.floor((rand||Math.random)()*3);
-  p.hp=Math.max(1,p.hp-h);p.inf=Math.min(99,p.inf+5);
+  const p=G.p,h0=p.hp,i0=p.inf;
+  let h=3+Math.floor((rand||Math.random)()*3),inf=5;
+  if(hasTrait('ill'))inf=Math.ceil(inf*1.5);
+  if(hasTrait('thinskin')){h+=2;inf+=3;}
+  p.hp=Math.max(1,p.hp-h);p.inf=Math.min(99,p.inf+inf);
   G.st.bites=(G.st.bites||0)+1;
   return{hp:h0-p.hp,inf:p.inf-i0};
 }
+
+/* outbreak points per year, by track length */
+const OUTPY={5:8,15:3,20:1.5};
 
 /* choices made earlier that shift the odds of later ones, by the stat being tested. keys are flags. */
 const FLAG_MODS={
@@ -263,8 +272,16 @@ function previewChips(fx){
   if(f.loyAll)chips.push({c:f.loyAll>0?'good':'bad',t:'loyAll',d:f.loyAll});
   return chips;
 }
+/* prone to illness and thin skin change what an infection costs */
+function traitFx(f){
+  if(!(f.inf>0)||!(G.p.traits&&G.p.traits.length))return f;
+  const g={...f};
+  if(hasTrait('ill'))g.inf=Math.ceil(g.inf*1.5);
+  if(hasTrait('thinskin')){g.inf+=3;g.hp=(g.hp||0)-2;}
+  return g;
+}
 function applyFx(fx,ctx,cost){
-  const f=scaledFx(fx,cost);
+  const f=traitFx(scaledFx(fx,cost));
   const before={};NUM.forEach(k=>before[k]=getV(k));
   if(cost)for(const k in cost)setV(k,getV(k)-cost[k]);
   NUM.forEach(k=>{if(f[k])setV(k,getV(k)+f[k]);});
@@ -314,6 +331,18 @@ function checkEnd(cause){
   if(G.over)finishRun();
 }
 /* ci is the ORIGINAL choice index of the view */
+/* a body that cannot take it: when a dangerous move goes wrong, thin skin, weakness and poor fitness cost extra */
+function dangerTax(){
+  const out=[],p=G.p;
+  let hp=0,inf=0;
+  if(hasTrait('thinskin')){hp+=2;inf+=3;}
+  if(hasTrait('weak'))hp+=1;
+  if(hasTrait('unfit'))hp+=1;
+  if(inf&&hasTrait('ill'))inf=Math.ceil(inf*1.5);
+  if(hp){p.hp=Math.max(0,p.hp-hp);out.push({c:'bad',k:'hp',d:-hp});}
+  if(inf){p.inf=Math.min(100,p.inf+inf);out.push({c:'bad',k:'inf',d:inf});}
+  return out;
+}
 function choose(ci){
   if(!G||!G.cur||G.cur.res||G.over)return false;
   const view=getView(),ch=view.choices[ci];
@@ -327,6 +356,7 @@ function choose(ci){
   const withMe=G.p.group.slice();
   const chips=applyFx(fx,ctx,ch.cost);
   chips.push(...firePerks(withMe));
+  if(ok===false&&ch.check&&ch.check.danger)chips.push(...dangerTax());
   {const st=G.st;st.decisions++;
    if(ch.check){st.flips++;
     if(ok){st.won++;st.streak++;st.lstreak=0;st.best=Math.max(st.best,st.streak);if(p<=.3)st.longWins++;if(p>=.8)st.sureWins++;}
@@ -345,7 +375,8 @@ function choose(ci){
 function useMeds(){
   if(!G||!G.cur||G.cur.res||G.over||G.p.sup.meds<1)return null;
   const doc=G.p.bg==='doctor'?1.5:1;
-  const heal=Math.round(20*doc),cure=Math.round(25*doc);
+  let heal=Math.round(20*doc),cure=Math.round(25*doc);
+  if(hasTrait('medic')){heal+=6;cure+=8;}
   const h0=G.p.hp,i0=G.p.inf;
   G.p.sup.meds--;G.st.meds++;
   G.p.hp=Math.min(G.p.maxHp,G.p.hp+heal);
@@ -367,7 +398,9 @@ function advanceDay(){
     notes.push({k:'birthday',age:p.age});
   }
   const eatP=Math.min(1,22/G.total);
-  const need=Math.random()<eatP?1+Math.floor(p.group.length/2):0;
+  let need=Math.random()<eatP?1+Math.floor(p.group.length/2):0;
+  if(need&&hasTrait('lighteater')&&Math.random()<TRAIT_FOOD.light)need=0;          // a light eater skips some meals
+  if(need&&hasTrait('hungry')&&Math.random()<TRAIT_FOOD.hungry)need+=1;                // a hearty appetite sometimes needs a bit more
   let hungry=false,thirsty=false;
   if(need){
     if(p.sup.food>=need)p.sup.food-=need;else{p.sup.food=0;hungry=true;}
@@ -385,18 +418,22 @@ function advanceDay(){
   if(p.inf>=60){p.hp-=5;notes.push({k:'fever'});}
   else if(p.inf>=35){p.hp-=2;notes.push({k:'feverish'});}
   if(!hungry&&!thirsty&&p.inf<60&&p.hp<p.maxHp){
-    const heal=Math.max(1,Math.round((2+Math.floor(p.stats.health/3))*Math.min(1,20/G.total)));
+    let heal=Math.max(1,Math.round((2+Math.floor(p.stats.health/3))*Math.min(1,20/G.total)));
+    if(hasTrait('healer'))heal*=2;
+    if(hasTrait('slowheal'))heal=Math.max(1,Math.round(heal/2));
     const h0=p.hp;p.hp=Math.min(p.maxHp,p.hp+heal);
     if(p.hp>h0)notes.push({k:'recover',n:p.hp-h0});
   }
-  if(!hungry&&!thirsty&&p.inf>0&&p.inf<50)p.inf=Math.max(0,p.inf-1);
+  if(!hungry&&!thirsty&&p.inf>0&&p.inf<50)p.inf=Math.max(0,p.inf-((hasTrait('healer')?2:1)-(hasTrait('ill')?1:0)));
   let md=p.group.length>=3?1:p.group.length>=1?0:-1;
   if(p.bg==='teacher')md+=1;
   if(p.marks.indexOf('haunted')>=0)md-=1;
   p.morale=clamp(p.morale+md,0,100);
   if(p.morale<=0){p.hp-=5;notes.push({k:'despair'});}
   const k=20/G.total;
-  const dOut=(Math.random()<.8*k?1:0)+(w.order<35&&Math.random()<k?1:0)+(w.order<15&&Math.random()<k?1:0);
+  /* the outbreak rises by so many points a year, by track: fast in a short game, slow in a long one. a fraction is a chance. */
+  const perTurn=(OUTPY[G.cfg&&G.cfg.road]||OUTPY[5])*G.mpt/12;
+  const dOut=Math.floor(perTurn)+(Math.random()<perTurn%1?1:0)+(w.order<35&&Math.random()<k?1:0)+(w.order<15&&Math.random()<k?1:0);
   const dOrd=w.outbreak>=60?-(Math.random()<k?(1+rnd(2)):0):w.outbreak>=30?-(Math.random()<k?rnd(2):0):-(Math.random()<.3*k?1:0);
   const o0=w.outbreak,r0=w.order;
   w.outbreak=clamp(w.outbreak+dOut,0,100);
