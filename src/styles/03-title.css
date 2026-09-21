@@ -1,9 +1,9 @@
 /* title */
 .hero{display:grid;gap:26px;padding:1vh 0 0}
 .langrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.mega{display:flex;flex-direction:column;font-family:var(--f-head);font-weight:400;text-transform:uppercase;font-size:clamp(4.4rem,17vw,11rem);line-height:.98;color:var(--text);text-shadow:0 4px 0 #000,0 0 40px rgba(194,120,3,.22)}
+.mega{display:flex;flex-direction:row;flex-wrap:wrap;align-items:baseline;column-gap:.28em;font-family:var(--f-head);font-weight:400;text-transform:uppercase;font-size:clamp(3rem,12vw,8.5rem);line-height:1.05;color:var(--text);text-shadow:0 4px 0 #000,0 0 40px rgba(194,120,3,.22)}
 .mega span:last-child{color:var(--accent)}
-:lang(he) .mega{font-weight:700;font-size:clamp(3.6rem,15vw,9rem);line-height:1.05}
+:lang(he) .mega{font-weight:700;font-size:clamp(3rem,11vw,7.5rem);line-height:1.1}
 .tape{height:22px;background:repeating-linear-gradient(-45deg,var(--accent) 0 20px,#141110 20px 40px);border:2px solid #000;opacity:.85;border-radius:2px}
 .lede{font-size:clamp(1.05rem,2.2vw,1.3rem);max-width:44ch;color:var(--text)}
 .roadH{font-size:1.5rem;color:var(--text);letter-spacing:.06em;text-transform:uppercase}

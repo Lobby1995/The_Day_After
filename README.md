@@ -13,6 +13,7 @@ Pick a country, a past and an age, then decide how to live through the end of th
 - A living world: outbreak, order and your own humanity shift with your choices
 - Companions with roles, loyalty, personal stories, and bonds
 - Early choices come back later as echoes
+- A plot: story chapters at fixed points of the road. Currently Brazil, Israel and the doctor have their own arcs, and earlier choices change later chapters
 - 50 achievements and 50 trophies, saved between runs
 
 ## Run it locally
@@ -49,6 +50,7 @@ src/
       country.js                events that belong to one country only
       companions.js             one personal story per companion
       echoes.js                 early choices returning later
+    content/story/            the plot: chapters per country and per character
     i18n/                     Hebrew text and all interface strings
     ui/                       sprites, screens, trophy room
 scripts/

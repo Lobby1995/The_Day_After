@@ -90,4 +90,4 @@
 .chip.good{border-inline-start-color:var(--primary-hover)}
 .chip.bad{border-inline-start-color:var(--accent)}
 .after{margin-top:28px}
-
+.play-grid + .vitals{margin-top:30px;margin-bottom:0}

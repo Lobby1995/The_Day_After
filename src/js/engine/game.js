@@ -58,7 +58,10 @@ function pickEvent(){
     const L=EVENTS.filter(e=>e.id.indexOf('loot_')===0&&seenCount(e.id)<capOf(e)&&G.recent.indexOf(e.id)<0&&(!e.cond||e.cond()));
     if(L.length)return pick(L);
   }
-  const pool=EVENTS.filter(e=>!e.open&&e.id!=='year_review'&&seenCount(e.id)<capOf(e)&&G.recent.indexOf(e.id)<0&&(!e.cond||e.cond()));
+  /* the plot comes first: a chapter whose time has come is played before anything random */
+  const chap=dueChapter();
+  if(chap)return chap;
+  const pool=EVENTS.filter(e=>!e.open&&!e.story&&e.id!=='year_review'&&seenCount(e.id)<capOf(e)&&G.recent.indexOf(e.id)<0&&(!e.cond||e.cond()));
   if(!pool.length)return EVMAP.quiet_night;
   const ws=pool.map(e=>{
     let w=Math.max(0,typeof e.w==='function'?e.w():(e.w||6));

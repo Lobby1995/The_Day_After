@@ -94,6 +94,6 @@ function defEv(o){
     else ch.out=Object.assign({text:c.out[0]},c.out[2]||{});
     return ch;
   });
-  add({id:o.id,title:o.t[0],text:o.x[0],cond:o.cond,w:o.w||16,max:o.max,once:o.once===undefined?true:o.once,wild:o.wild,pre:o.pre,pair:o.pair||[0,1],choices});
+  add({id:o.id,title:o.t[0],text:o.x[0],cond:o.cond,w:o.w||16,max:o.max,once:o.once===undefined?true:o.once,wild:o.wild,story:o.story,pre:o.pre,pair:o.pair||[0,1],choices});
   HEV[o.id]={t:o.t[1],x:o.x[1],c:o.ch.map(c=>c.win?[c.l[1],c.s[1],c.win[1],c.lose[1]]:[c.l[1],c.s[1],c.out[1]])};
 }

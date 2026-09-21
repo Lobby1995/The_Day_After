@@ -38,7 +38,7 @@ Browser storage keys: `daysafter.save.v2` (the run, with `G.v` as a format versi
 
 ## A turn
 
-1. `pickEvent()` chooses an event from the pool: conditions (`cond`), weights (`w`), repeat limits (`max`, `once`), and a lifeline if supplies hit zero.
+1. `pickEvent()` first plays any **story chapter** that is due (see `content/story/engine.js`), otherwise chooses an event from the pool: conditions (`cond`), weights (`w`), repeat limits (`max`, `once`), and a lifeline if supplies hit zero.
 2. `startTurn()` builds it (`pre` for random setup, `build` for events made at play time) and picks exactly **two** options to show.
 3. The player picks one. `chance()` computes the odds from the stat, background, companions, gear, marks, world state (outbreak makes danger harder, order helps charm), and `choose()` rolls.
 4. `applyFx()` applies the outcome (numbers, flags, companions, stats) and returns the chips shown to the player.

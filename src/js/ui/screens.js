@@ -57,7 +57,6 @@ function renderTitle(){
     <h2 class="roadH">${t('roadH')}</h2>
     <div class="roads">${[5,15,20].map((n,i)=>{const r=tt('roads',n);return`<button class="road" data-act="road" data-v="${n}"><span class="rtag">${t('roadTag',i+1)}</span><b class="num">${r[0]}</b><span class="rt">${r[1]}</span><span class="rd">${r[2]}</span></button>`;}).join('')}</div>
     ${sv?`<div class="row"><button class="btn" data-act="continue">${t('cont',svYear,esc(sv.p.name))}</button></div>`:''}
-    <div class="row"><button class="btn ghost" data-act="trophies">🏆 ${t('troBtn')} · ${Object.keys(META.ach).length+Object.keys(META.tro).length}</button></div>
     <div class="rules">${UI[LANG].rules.map(r=>`<div><b>${r[0]}</b><span>${r[1]}</span></div>`).join('')}</div>
   </section>`;
   applyLang();
@@ -146,8 +145,10 @@ function triage(){
 }
 function renderPlay(){
   view='play';
-  main().innerHTML=`<section class="play"><div class="vitals" id="vitals"></div>
-    <div class="play-grid"><div><div id="overnight"></div><div class="stage" id="stage"></div></div><aside class="side" id="side"></aside></div></section>`;
+  /* the question and its choices come first; the survivor's condition sits underneath */
+  main().innerHTML=`<section class="play">
+    <div class="play-grid"><div><div id="overnight"></div><div class="stage" id="stage"></div></div><aside class="side" id="side"></aside></div>
+    <div class="vitals" id="vitals"></div></section>`;
   refresh();applyLang();
 }
 function refresh(){renderVitals();renderSide();renderStage();paintAll();updateHeader();}

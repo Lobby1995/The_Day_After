@@ -25,11 +25,9 @@ const engineSource=()=>join([...M.engine,...M.hebrew]);     // rules + Hebrew te
 const buildScript=()=>{checkManifest();return join([...M.engine,...M.presentation]);};
 const buildStyles=()=>join(M.styles);
 function buildHtml(){
-  const pkg=JSON.parse(fs.readFileSync(path.join(ROOT,'package.json'),'utf8'));
   return read('index.html')
     .replace('/*@STYLES*/',()=>buildStyles())
-    .replace('//@SCRIPT',()=>buildScript())
-    .replace('{{VERSION_MAJOR}}',()=>pkg.version.split('.')[0]);
+    .replace('//@SCRIPT',()=>buildScript());
 }
 module.exports={engineSource,buildScript,buildStyles,buildHtml};
 

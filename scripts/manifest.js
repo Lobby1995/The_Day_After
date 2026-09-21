@@ -19,6 +19,10 @@ module.exports={
     'js/content/events/country.js',               // events that belong to one country only
     'js/content/events/companions.js',            // one personal story per companion
     'js/content/events/echoes.js',                // early choices coming back later
+    'js/content/story/engine.js',                 // story chapters: registry and scheduler
+    'js/content/story/brazil.js',                 // country arc: Brazil, "Rooftops"
+    'js/content/story/israel.js',                 // country arc: Israel, "The Shelter"
+    'js/content/story/doctor.js',                 // character arc: the doctor, plus doctor-in-country chapters
     'js/engine/risk.js',                          // turns "certain" options into gambles
     'js/engine/meta.js',                          // achievements and trophies (saved between runs)
     'js/engine/game.js',                          // newGame, pickEvent, chance, choose, advanceDay

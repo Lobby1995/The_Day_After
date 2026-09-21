@@ -43,7 +43,6 @@
   .facts{grid-template-columns:1fr}
   .fact:nth-child(odd){border-inline-end:0}
   .endpic{flex-direction:column}
-  .ver{display:none}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 

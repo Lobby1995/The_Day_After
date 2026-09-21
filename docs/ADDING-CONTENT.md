@@ -60,3 +60,24 @@ In `engine/meta.js`: `A(id, [en, he], [descEn, descHe], () => testUsingG)` for a
 npm test      # content + UI
 npm run sim   # if you changed numbers: survival should stay roughly 55-75%
 ```
+
+## A story chapter
+
+Story chapters are the plot. They live in `src/js/content/story/`, one file per country or character arc. A chapter is a two-choice event written with `chapter({...})` instead of `defEv({...})`:
+
+```js
+chapter({ id: 'br_3', arc: 'loc:brazil', label: ['Rooftops', 'הגגות'], n: 3, of: 6, at: .36,
+  t: ['The Tunnels', 'המנהרות'],
+  x: [() => `Text that can read earlier choices: ${flag('br_net') ? 'one thing' : 'another'}.`,
+      () => `...the same in Hebrew...`],
+  ch: [ /* two choices, each with check, win and lose, exactly like defEv */ ] });
+```
+
+- `arc` decides who sees it: `loc:<country>`, `bg:<background>`, or `pair:<background>:<country>` (a background in one specific country).
+- `n` is the chapter number inside the arc. Chapters play in order, one after the other.
+- `at` is how far through the road the chapter becomes due, from 0 to 1. Due chapters play before any random event, so the plot always advances.
+- Set a flag in one chapter (`flag: 'br_tunnels'`) and read it in a later one with `flag('br_tunnels')`. That is how earlier choices change the plot.
+- Every outcome automatically carries a little food and water: a story turn replaces a scavenging turn, and without this the plot would starve the player.
+- `tests/story.test.js` checks that every arc plays in order on every road and that all text works with and without flags.
+
+Currently written: Brazil (6 chapters), Israel (6), the doctor (4), and one doctor-in-Brazil and one doctor-in-Israel chapter.
