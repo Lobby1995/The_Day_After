@@ -72,3 +72,6 @@ H('f_piano',`מוזיקה בחורבות`,
 
 /* attach the Hebrew text for choices that risk.js turned into gambles (their entries exist by now) */
 applyHeTwists();
+
+/* put the bridge in front of every country opener now that its Hebrew exists */
+dressOpeners();

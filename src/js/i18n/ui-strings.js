@@ -133,7 +133,7 @@ function tResult(ev,ci,br,ctx){
 }
 
 const Lx=v=>(v&&typeof v==='object'&&!Array.isArray(v)&&'en' in v)?v[LANG]:v;
-function vTitle(){const d=G.cur.dyn;return d?Lx(d.title):tTitle(EVMAP[G.cur.id],G.cur.ctx);}
+function vTitle(){const d=G.cur.dyn,ev=EVMAP[G.cur.id];const base=d?Lx(d.title):tTitle(ev,G.cur.ctx);return ev&&ev.pro?`${t('prologue',ev.pro,3)} \u00b7 ${base}`:base;}
 function vText(){const d=G.cur.dyn;return d?Lx(d.text):tText(EVMAP[G.cur.id],G.cur.ctx);}
 function vChoice(ci){const d=G.cur.dyn;if(d){const c=d.choices[ci];return{label:Lx(c.label),sub:Lx(c.sub)};}return tChoice(EVMAP[G.cur.id],ci);}
 function vResult(res){const d=G.cur.dyn;if(d)return Lx(d.choices[res.ci][res.br].text);return tResult(EVMAP[G.cur.id],res.ci,res.br,G.cur.ctx);}
@@ -141,7 +141,7 @@ function ctxName(){const c=G.cur.ctx||{};return c.m||(c.member&&c.member.name)||
 
 /* creation: one page per step */
 Object.assign(UI.en,{sWho:'Who you are',sWhere:'Where',sPast:'Your past',sReady:'Ready',next:'Next',back:'Back',change:'Change',
-  stepOf:(a,b)=>`Step ${a} of ${b}`,sReadyH:'Your survivor',sReadyP:'This is who starts the end of the world. You can still change anything.'});
+  stepOf:(a,b)=>`Step ${a} of ${b}`,prologue:(n,m)=>`Prologue ${n}/${m}`,sReadyH:'Your survivor',sReadyP:'This is who starts the end of the world. You can still change anything.'});
 Object.assign(UI.he,{sWho:'הדמות',sWhere:'המקום',sPast:'העבר',sReady:'מוכנים',next:'הבא',back:'חזרה',change:'שינוי',
-  stepOf:(a,b)=>`שלב ${a} מתוך ${b}`,sReadyH:'הניצול',sReadyP:'זה מי שמתחיל את סוף העולם. אפשר עדיין לשנות הכול.'});
+  stepOf:(a,b)=>`שלב ${a} מתוך ${b}`,prologue:(n,m)=>`פרולוג ${n}/${m}`,sReadyH:'הניצול',sReadyP:'זה מי שמתחיל את סוף העולם. אפשר עדיין לשנות הכול.'});
 

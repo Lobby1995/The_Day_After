@@ -81,3 +81,14 @@ chapter({ id: 'br_3', arc: 'loc:brazil', label: ['Rooftops', 'הגגות'], n: 3
 - `tests/story.test.js` checks that every arc plays in order on every road and that all text works with and without flags.
 
 Currently written: Brazil (6 chapters), Israel (6), the doctor (4), and one doctor-in-Brazil and one doctor-in-Israel chapter.
+
+## The prologue (day one)
+
+Day one is three scenes with no night between them, in `src/js/content/prologue.js`:
+
+1. `pro_<background>` : the moment, one scene per profession. Its text is built from the scene, an age line (three bands: up to 29, 30 to 44, 45 and over), how far the collapse has gone in that country, and a sound or sight that belongs to the country.
+2. `pro_age_<band>` : what the player's age puts on their shoulders.
+3. `open_<country>` : the country's own night (in `events/base.js`), now with a one-line bridge in front of it that depends on the profession.
+
+To add a profession scene, write another `beat({...})` with a scene, three age lines, and two gambles. Set flags in the choices; later chapters can read them. `tests/prologue.test.js` checks that every profession, country and age band gets a different opening.
+

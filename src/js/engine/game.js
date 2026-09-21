@@ -43,6 +43,7 @@ function newGame(cfg){
      p:{name:cfg.name,sex:cfg.sex,age:cfg.age,skin:cfg.skin|0,seed:h,loc:cfg.loc,bg:cfg.bg,stats,hp:maxHp,maxHp,inf:0,morale:70,humanity:50,sup,group:[],marks:[]},
      w:{day:1,outbreak:loc.outbreak,order:loc.order},
      flags,fday:{},st:freshStats(),toasts:[],seen:[],recent:[],log:[],notes:[],cur:null,over:null,last:null};
+  G.pro=prologueFor(G.p).filter(id=>EVMAP[id]);
   startTurn();
 }
 
@@ -50,7 +51,11 @@ const seenCount=id=>G.seen.filter(x=>x===id).length;
 const capOf=e=>e.max||(e.once?1:99);
 function pickEvent(){
   const d=G.w.day;
-  if(d===1)return EVMAP['open_'+G.p.loc];
+  if(d===1){
+    /* the prologue: the first hours of day one play as a short run of scenes, ending with the country's night */
+    if(G.pro&&G.pro.length)return EVMAP[G.pro.shift()];
+    return EVMAP['open_'+G.p.loc];
+  }
   const yr=timeOf(d).year;
   if(yr>(G.flags.yrDone||1)){G.flags.yrDone=yr;if(G.total<=20||(yr-1)%3===0)return EVMAP.year_review;}
   /* the world throws you a lifeline when you are truly out: something to scavenge nearby */
@@ -362,6 +367,8 @@ function nextStep(){
   if(!G)return null;
   if(G.over)return'end';
   if(!G.cur||!G.cur.res)return'turn';
+  /* no night passes between prologue scenes: the next scene starts on the same day */
+  if(G.pro&&G.pro.length){startTurn();return'turn';}
   if(G.w.day>=G.total){G.over={type:'survived'};finishRun();save();return'end';}
   advanceDay();
   if(G.over){save();return'end';}

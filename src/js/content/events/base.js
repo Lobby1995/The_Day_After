@@ -1,6 +1,6 @@
 /* openers: day 1, one per country */
 add({id:'open_usa',open:true,loc:'usa',title:`The City Is Burning`,
- text:`The power died three days ago. The sirens stopped yesterday, which is worse. From your window you watch a National Guard truck sit abandoned in the intersection, doors open, engine still running. Something moves in the shadow of its cab. Out in the hallway, someone is pounding on your neighbor's door, and nobody is answering.`,
+ text:`The power has just gone out. The sirens stopped an hour ago, which is worse. From the window you watch a National Guard truck sit abandoned in the intersection, doors open, engine still running. Something moves in the shadow of its cab. Out in the hallway, someone is pounding on your neighbor's door, and nobody is answering.`,
  choices:[
   {label:`Slip out the back and make for the suburbs`,sub:`Move before the streets fill up.`,check:{stat:'stamina',dc:10,danger:true},
    win:{text:`You keep low and keep moving, ducking through service alleys. By dusk the skyline is behind you and the streets are quieter. Quieter isn't safe. But it's something.`,morale:5,water:1},
