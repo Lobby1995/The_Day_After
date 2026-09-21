@@ -197,6 +197,7 @@ function renderPlay(){
 function refresh(){renderVitals();renderSide();renderStage();paintAll();updateHeader();}
 const cellsHtml=(pct,n,cls)=>{let on=Math.round(clamp(pct,0,100)/100*n);if(pct>0&&on===0)on=1;return`<div class="cells ${cls||''}" aria-hidden="true">${Array.from({length:n},(_,k)=>`<i class="${k<on?'on':''}"></i>`).join('')}</div>`;};
 const meterHtml=(label,valTxt,cls,pct)=>`<div class="meter"><div class="mlab"><span>${label}</span><b class="num">${valTxt}</b></div>${cellsHtml(pct,20,cls)}</div>`;
+let VMORE=false;   // whether the marks / companions / journal strip is open: kept across redraws
 function trioHtml(){
   const p=G.p,mk=marksOf(),M=UI[LANG].marks;
   const scars=mk.length?`<ul>${mk.map(m=>`<li title="${esc(M[m][1])}"><b>${M[m][0]}</b><span>${M[m][1]}</span></li>`).join('')}</ul>`:`<p class="small">${t('noMarks')}</p>`;
@@ -205,6 +206,7 @@ function trioHtml(){
   return`<div class="trio"><div class="tcol"><div class="tlab">${t('hMarks')}</div>${scars}</div><div class="tcol"><div class="tlab">${t('hGroup')}</div>${squad}</div><div class="tcol"><div class="tlab">${t('hJournal')}</div>${jr}</div></div>`;
 }
 function renderVitals(){
+  {const vm=$('vmore');if(vm&&typeof vm.open==='boolean')VMORE=vm.open;}
   const p=G.p,tc=triage(),x=timeOf(G.w.day);
   const canMeds=p.sup.meds>0&&!G.cur.res&&!G.over;
   const doc=p.bg==='doctor';
@@ -217,11 +219,11 @@ function renderVitals(){
        ${meterHtml(t('inf'),`${p.inf}%`,'inf',p.inf)}
        ${meterHtml(t('mor'),`${p.morale}%`,'mor',p.morale)}
      </div>
-     ${trioHtml()}
-     <div class="prog" title="${t('decision',G.w.day,G.total)}"><i style="width:${(G.w.day-1)/G.total*100}%"></i></div>
-     <div class="vact"><button class="btn sm" data-act="meds" ${canMeds?'':'disabled'}>${t('meds')}</button>
-       <span class="note" id="note" role="status">${canMeds?t('medsNote',doc?30:20,doc?38:25):''}</span>
+     <div class="vact"><button class="btn sm" data-act="meds" ${canMeds?'':'disabled'} title="${canMeds?esc(t('medsNote',doc?30:20,doc?38:25)):''}">${t('meds')}</button>
+       <span class="note" id="note" role="status"></span>
        <span class="small pr">${t('decision',G.w.day,G.total)}</span></div>
+     <div class="prog" title="${t('decision',G.w.day,G.total)}"><i style="width:${(G.w.day-1)/G.total*100}%"></i></div>
+     <details class="vmore" id="vmore" ${VMORE?'open':''}><summary><span>${t('hMarks')} <b>${marksOf().length}</b></span><span>${t('hGroup')} <b>${p.group.length}</b></span><span>${t('hJournal')}</span></summary>${trioHtml()}</details>
    </div>`;
 }
 const trendOf=(v,prev,upGood)=>{if(prev==null||v===prev)return'';const up=v>prev;const good=up===upGood;return`<span class="tr ${good?'good':'bad'}" title="${(up?'+':'\u2212')+Math.abs(v-prev)}">${up?'\u25B2':'\u25BC'}${Math.abs(v-prev)}</span>`;};

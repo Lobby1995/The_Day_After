@@ -118,3 +118,30 @@
 .wmsg.show{display:block}
 .wz{font-family:var(--f-head);color:#c96a5a}
 
+/* the condition block is compact: one line per meter, the medicine button right under them, and the marks / companions / journal folded into one strip */
+.side{gap:16px}
+.side .daybox{padding:8px 16px;gap:10px}
+.side .daybox b{font-size:1.9rem;line-height:1}
+.side .daybox small{font-size:.66rem}
+.side .vmain{padding:12px 16px;gap:12px}
+.side .vtop{flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.side .tri{font-size:.9rem}
+.side .sup{gap:6px}
+.side .sup span{padding:2px 8px;font-size:.82rem}
+.side .vbars{gap:8px}
+.side .vbars .meter{display:grid;grid-template-columns:4.6em minmax(0,1fr) auto;align-items:center;column-gap:10px;margin:0}
+.side .vbars .mlab{display:contents}
+.side .vbars .mlab span{grid-column:1;grid-row:1;font-size:.82rem}
+.side .vbars .mlab b{grid-column:3;grid-row:1;font-size:.86rem;min-width:3.4em;text-align:end}
+.side .vbars .cells{grid-column:2;grid-row:1}
+.side .vact{gap:8px 12px}
+.side .vact .note:empty{display:none}
+.vmore{border-top:1px solid var(--border)}
+.vmore summary{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;cursor:pointer;padding:10px 0 2px;font-size:.8rem;color:var(--secondary);list-style:none}
+.vmore summary::-webkit-details-marker{display:none}
+.vmore summary::after{content:'\25BE';margin-inline-start:auto;color:var(--accent)}
+.vmore[open] summary::after{content:'\25B4'}
+.vmore summary b{color:var(--text)}
+.side .panel{padding:14px 16px 16px}
+.side .panel .meter{margin:10px 0}
+

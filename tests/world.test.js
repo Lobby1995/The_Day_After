@@ -177,6 +177,10 @@ ids.forEach(id=>{
   const i=html.indexOf('class="side"'),v=html.indexOf('id="vitals"'),sb=html.indexOf('id="side"'),end=html.indexOf('</aside>');
   if(!(i>=0&&v>i&&sb>v&&end>sb))bad('the condition block should be the first thing in the side column, above the world report');
   if(html.lastIndexOf('id="vitals"')!==v)bad('the condition block should appear only once');
+  const vit=els.vitals.innerHTML;
+  const b=vit.indexOf('class="vbars"'),ac=vit.indexOf('class="vact"'),mo=vit.indexOf('class="vmore"');
+  if(!(b>=0&&ac>b&&mo>ac))bad('the condition block should read: meters, the medicine button, then the folded strip');
+  if(!/<details class="vmore" id="vmore"\s*>/.test(vit))bad('the marks, companions and journal should fold into one strip that starts closed');
   const side=els.side.innerHTML;
   if(!(side.indexOf('p-world')>=0&&side.indexOf('p-file')>side.indexOf('p-world')))bad('the report on the world should come before the survivor file');
 }
