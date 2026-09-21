@@ -93,3 +93,13 @@
 .play-grid + .vitals{margin-top:30px;margin-bottom:0}
 .tcol .role.unk{background:transparent;color:var(--muted);border:1px dashed var(--border)}
 
+/* the world view */
+.worldbox{margin-bottom:14px;background:#0f0f0f;border:2px solid var(--border);border-radius:4px;overflow:hidden}
+.worldbox canvas{display:block;width:100%;height:auto;image-rendering:pixelated;touch-action:manipulation;cursor:pointer}
+.worldbox.open canvas{height:230px;object-fit:cover;object-position:center 60%}
+.wbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 12px;background:var(--surface);border-top:2px solid var(--border)}
+.wplace{font-family:var(--f-head);text-transform:uppercase;letter-spacing:.06em;color:var(--accent)}
+.whint{flex:1;min-width:14ch;color:var(--muted);font-size:.85rem}
+.worldbox.open .whint,.worldbox.open [data-act="worldGo"],.worldbox.open [data-act="worldSkip"]{display:none}
+.stage[hidden]{display:none}
+

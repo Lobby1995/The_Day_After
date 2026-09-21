@@ -174,3 +174,9 @@ Object.assign(UI.he,{shareBtn:'שיתוף',shareH:'לשתף את הריצה',sha
   shareYears:'שנים',shareDecisions:'החלטות',shareHumanity:'אנושיות',shareGroup:'מלווים',sharePoints:'נקודות הישרדות',shareTag:'כמה זמן תחזיקו מעמד?',
   shareLine:(name,who,outcome,hum,grp,pts,url)=>`${name}, ${who}. ${outcome} אנושיות ${hum}%, ${grp} מלווים, ${pts} נקודות הישרדות. ימים אחרי: ${url}`});
 
+/* the world view */
+Object.assign(UI.en,{worldBtn:'World',worldAria:'A view of the place you are in. Walk with the arrow keys or by tapping.',
+  worldHint:'Arrow keys or a tap to walk. Step into the glowing ring, or press Go.',worldGo:'Go there',worldSkip:'Skip to the text'});
+Object.assign(UI.he,{worldBtn:'עולם',worldAria:'מבט על המקום שבו אתם נמצאים. הולכים עם מקשי החצים או בנגיעה.',
+  worldHint:'מקשי החצים או נגיעה כדי ללכת. להיכנס לטבעת הזוהרת, או ללחוץ על ״ללכת לשם״.',worldGo:'ללכת לשם',worldSkip:'לדלג לטקסט'});
+

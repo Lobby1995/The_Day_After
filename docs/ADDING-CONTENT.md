@@ -131,3 +131,11 @@ What each kind of companion brings is the `PERKS` table in `engine/game.js`: `ev
 
 `ui/share.js` draws a card on a canvas (`drawShareCard`) and builds a line of text (`shareText`). The end screen's Share button opens a dialog with the card, the text, and buttons for the phone's share sheet, copy, and save image.
 
+## The world view: places
+
+A place is a small map in `src/js/ui/world-scenes.js`, one character per tile: `#` wall, `%` tall building, `Y` tree, `.` floor, `@` where the survivor comes in, `X` where the question waits, and letters for furniture (`T` table, `K` desk, `C` chair, `B` bed, `S` shelf, `M` machine, `V` vehicle, `O` operating table, `L` lamp, `F` fire barrel, `E` crate, `N` podium, `I` board, `A` tent, `Q` counter, `U` sofa, `G` sandbags, `P` plant, `R` rock, `r` rug). Put the back walls on the first row and column so the front of the room stays open. To add a place, call `wScene('id',{name:[en,he],floor:'wood',map:[...],npcs:[...]})`. To draw a new kind of furniture, add its letter to `WO` in `world.js` and, if it should block the way, to `WBLOCK`.
+
+`worldSceneId` decides which place a question happens in (the prologue has a room for every profession and a home for every age; the rest is chosen by the kind of question). Outdoors, the country decides the weather (`WWEATHER`).
+
+`tests/world.test.js` checks that every place is a well-formed map, that the question can be reached from the entrance, that every event has a place, and that a whole game can be played through the world view. `npm run preview` draws every place to a PNG in `/tmp/preview`, so a change can be looked at without a browser.
+

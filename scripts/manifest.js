@@ -51,6 +51,9 @@ module.exports={
     'js/i18n/ui-strings.js',      // every interface string, English + Hebrew, and language helpers
     'js/ui/trophies.js',          // trophy room and pop-ups
     'js/ui/share.js',             // the share card at the end of a run
+    'js/ui/world-scenes.js',      // the world view: places, and which place a question happens in
+    'js/ui/world.js',             // the world view: isometric drawing and walking
+    'js/ui/world-ui.js',          // the world view: joined to the game (button, keys, taps, the question opens on arrival)
     'js/ui/screens.js',           // title, creation, play, ending, wiring (must be last: it starts the app)
   ],
   styles:[

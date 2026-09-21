@@ -11,6 +11,7 @@ Pick a country, a past and an age, then decide how to live through the end of th
 - 8 backgrounds (doctor, soldier, mechanic...), age and skin variants, pixel-art portraits drawn in code
 - 3 roads: 5, 15 or 20 years (about 20, 36 or 48 decisions)
 - Survival points and a supplies shop: every run earns points (up to 1000 can be banked), spent on food, water, medicine, ammunition or a rifle before the next run
+- A world view: press World in the header and the game is drawn as a small isometric place. You walk (arrow keys, WASD, or a tap) to the glowing ring, and the question opens there. Same game underneath: same questions, same rolls
 - Companions with hidden gifts that arrive by the number of choices, and a share card at the end of every run
 - Armed encounters: rounds and a rifle are worth something, with options that cost ammunition and are much easier
 - Dilemmas: choices with a price and no dice, remembered later, sometimes with news the player did not have when they chose

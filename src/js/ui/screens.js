@@ -25,6 +25,7 @@ function applyLang(){
   document.querySelectorAll('[data-act="lang"]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===LANG)));
   const br=$('brand');if(br)br.textContent=t('brand');
   const tb=$('troBtn');if(tb)tb.textContent='🏆 '+t('trophies');
+  const wb=$('worldBtn');if(wb){wb.textContent='🗺 '+t('worldBtn');wb.setAttribute('aria-pressed',String(WMODE));}
   const rb=$('restartBtn');if(rb){rb.textContent=t('restart');rb.style.display=view==='title'?'none':'';}
   document.title=t('brand');
   updateHeader();
@@ -190,9 +191,9 @@ function renderPlay(){
   view='play';
   /* the question and its choices come first; the survivor's condition sits underneath */
   main().innerHTML=`<section class="play">
-    <div class="play-grid"><div><div id="overnight"></div><div class="stage" id="stage"></div></div><aside class="side" id="side"></aside></div>
+    <div class="play-grid"><div><div id="worldslot"></div><div id="overnight"></div><div class="stage" id="stage"></div></div><aside class="side" id="side"></aside></div>
     <div class="vitals" id="vitals"></div></section>`;
-  refresh();applyLang();
+  worldSync();refresh();applyLang();
 }
 function refresh(){renderVitals();renderSide();renderStage();paintAll();updateHeader();}
 const cellsHtml=(pct,n,cls)=>{let on=Math.round(clamp(pct,0,100)/100*n);if(pct>0&&on===0)on=1;return`<div class="cells ${cls||''}" aria-hidden="true">${Array.from({length:n},(_,k)=>`<i class="${k<on?'on':''}"></i>`).join('')}</div>`;};
@@ -336,6 +337,7 @@ function renderStage(){
   }
   $('stage').innerHTML=`<div class="shead"><span>${timeText()}</span><span>${locName(G.p.loc)}</span></div><div class="sbody"><h2>${esc(vTitle())}</h2><p class="sit">${esc(sitLine()[LANG])}</p>${body}</div>`;
   if(res&&!rolling()){const nb=$('nextBtn');if(nb&&nb.focus)nb.focus({preventScroll:true});flushToasts();}
+  worldApplyStage();
 }
 function choiceHtml(view,ci,pos){
   const ch=view.choices[ci],a=avail(ch),tc=vChoice(ci);
@@ -472,6 +474,9 @@ document.addEventListener('click',e=>{
     if(n>=0&&n<=it.max){const before=CFG.buy[id]||0;CFG.buy[id]=n;if(buyCost()>(META.bank||0))CFG.buy[id]=before;}
     return renderCreate();}
   if(a==='start')return startFromCreate();
+  if(a==='world')return worldToggle();
+  if(a==='worldGo'){if(WS&&!WOPEN)worldGo(WS);return;}
+  if(a==='worldSkip')return worldOpen();
   if(a==='share')return showShare();
   if(a==='shareNative')return nativeShare();
   if(a==='shareCopy')return copyShare();

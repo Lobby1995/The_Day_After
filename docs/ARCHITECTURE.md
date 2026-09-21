@@ -57,3 +57,8 @@ Browser storage keys: `daysafter.save.v2` (the run, with `G.v` as a format versi
 - `tests/ui-smoke.js` - drives the real UI through a fake browser: full playthroughs on all three roads in both languages, restart flows, language switching.
 - `tests/ui-trophies.js` - trophy room, tabs, end-screen rewards.
 - `tests/balance-sim.js` - bots play thousands of runs to report survival rates and the share of risk-free questions. Run it after changing numbers.
+
+## The world view
+
+Four files in `src/js/ui/`: `world-scenes.js` (the places, and which place a question happens in), `world.js` (isometric drawing and walking; pure, it knows nothing about the game's questions), `world-ui.js` (the button, the keys and taps, the loop, and hiding the question until the survivor arrives), and `share.js` is unrelated. The world view never changes the game's state: choices and rolls are the same as in the text view. `tests/tools/soft-canvas.js` is a small software canvas used to draw places to PNG without a browser.
+
