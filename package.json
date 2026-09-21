@@ -8,7 +8,7 @@
   "scripts": {
     "build": "node scripts/build.js",
     "dev": "node scripts/serve.js",
-    "test": "node tests/content.test.js && node tests/story.test.js && node tests/ui-smoke.js && node tests/ui-trophies.js",
+    "test": "node tests/content.test.js && node tests/story.test.js && node tests/ui-smoke.js && node tests/ui-trophies.js && node tests/ui-wizard.js",
     "sim": "node tests/balance-sim.js 500 smart 15"
   }
 }

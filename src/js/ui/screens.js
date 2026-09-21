@@ -62,59 +62,84 @@ function renderTitle(){
   applyLang();
 }
 
-/* ---------- creation ---------- */
+/* ---------- creation: one page per step, with a summary that follows you ---------- */
+let CSTEP=0;                                   // 0 who, 1 where, 2 past, 3 ready
+const CSTEPS=['sWho','sWhere','sPast','sReady'];
+const ageBonus=b=>Object.entries(bgObj(b).bonus).map(([k,v])=>`+${v} ${statN(k)}`).join(', ');
+const nmField=()=>{const n=$('nm');if(n)n.value=CFG.name;};
+function stepWho(){return `<h2>${t('hWho')}</h2><p>${t('pWho')}</p>
+    <div class="field"><label for="nm">${t('name')}</label><input type="text" id="nm" maxlength="20" value="${esc(CFG.name)}" autocomplete="off"><button class="btn sm" data-act="randname">${t('roll')}</button></div>
+    <div class="field"><label>${t('sex')}</label><div class="seg" role="group" aria-label="${t('sex')}"><button data-act="sex" data-v="m">${t('male')}</button><button data-act="sex" data-v="f">${t('female')}</button></div></div>
+    <div class="field"><label for="age">${t('age')}</label><input type="range" id="age" min="18" max="60" value="${CFG.age}"><span class="ageout num" id="ageout">${CFG.age}</span></div>
+    <p class="small" id="agenote"></p>
+    <div class="field" style="margin-top:12px"><label>${t('skin')}</label><div class="swatches">${SKINS.map((c,i)=>`<button class="sw" data-act="skin" data-v="${i}" style="background:${c}" aria-label="${t('skin')} ${i+1}"></button>`).join('')}</div></div>`;}
+function stepWhere(){return `<h2>${t('hWhere')}</h2><p>${t('pWhere')}</p>
+    <div class="board">
+      ${LOC_ORDER.map(id=>{const l=LOCS[id];return`<button class="lrow" data-act="loc" data-v="${id}"><span class="code">${l.code}</span><span class="nm">${locName(id)}</span><span class="sev" title="${t('outbreak')} ${l.outbreak}%">${cellsHtml(l.outbreak,10,'out sm')}</span><span class="stg">${tt('stg',stageOf(l.outbreak))}</span></button>`;}).join('')}
+      <button class="lrow" data-act="loc" data-v="random"><span class="code">?</span><span class="nm">${t('random')}</span><span></span><span class="stg">${t('unknown')}</span></button>
+    </div>
+    <div class="brief" id="brief"></div>`;}
+function stepPast(){return `<h2>${t('hBg')}</h2><p>${t('pBg')}</p>
+    <div class="bgrid">
+      ${BGS.map(b=>`<button class="brow" data-act="bg" data-v="${b.id}">${canvasHtml(sprCreate(b.id),2,'',`data-bgid="${b.id}"`)}<span class="btxt"><span class="nm" data-bgname="${b.id}">${bgN(b.id,CFG.sex)}</span><span class="pk">${bgPerk(b.id)}</span><span class="bn">${ageBonus(b.id)}</span></span></button>`).join('')}
+      <button class="brow" data-act="bg" data-v="random">${canvasHtml(sprCreate('?'),2)}<span class="btxt"><span class="nm">${t('random')}</span><span class="pk">${t('pRandomBg')}</span></span></button>
+    </div>`;}
+/* the last page: everything you chose, each with a way back to change it */
+function stepReady(){
+  const b=CFG.bg==='random'?null:bgObj(CFG.bg);
+  const rows=[
+    [t('road'),t('yearsShort',CFG.road),-1],
+    [t('hWho'),`${esc((CFG.name||'').trim()||'?')} \u00b7 ${tt('sexWord',CFG.sex)}, ${CFG.age}`,0],
+    [t('hWhere'),CFG.loc==='random'?t('random'):locName(CFG.loc),1],
+    [t('hBg'),b?bgN(b.id,CFG.sex):t('random'),2]
+  ];
+  return `<h2>${t('sReadyH')}</h2><p>${t('sReadyP')}</p>
+    <div class="sumlist">${rows.map(r=>`<div class="sumrow"><span class="sk">${r[0]}</span><b class="sv">${r[1]}</b>${r[2]>=0?`<button class="btn sm ghost" data-act="stepGo" data-v="${r[2]}">${t('change')}</button>`:''}</div>`).join('')}</div>`;
+}
+/* progress: which page of how many, and every finished page is a button back to it */
+function stepperHtml(){
+  return `<ol class="stepper" aria-label="${t('stepOf',CSTEP+1,CSTEPS.length)}">${CSTEPS.map((k,i)=>`<li class="${i===CSTEP?'cur':i<CSTEP?'done':''}">${i<CSTEP?`<button data-act="stepGo" data-v="${i}"><i>${i+1}</i><span>${t(k)}</span></button>`:`<div><i>${i+1}</i><span>${t(k)}</span></div>`}</li>`).join('')}</ol>`;
+}
+/* the small summary that follows you from page to page */
+function chipsHtml(){
+  const b=CFG.bg==='random'?null:bgObj(CFG.bg);
+  const chips=[[t('yearsShort',CFG.road),-1]];
+  if(CSTEP>0)chips.push([`${esc((CFG.name||'').trim()||'?')} \u00b7 ${tt('sexWord',CFG.sex)}, ${CFG.age}`,0]);
+  if(CSTEP>1)chips.push([CFG.loc==='random'?t('random'):locName(CFG.loc),1]);
+  if(CSTEP>2)chips.push([b?bgN(b.id,CFG.sex):t('random'),2]);
+  return `<div class="chips-row">${chips.map(c=>c[1]>=0?`<button class="cchip" data-act="stepGo" data-v="${c[1]}">${c[0]}</button>`:`<span class="cchip fixed">${c[0]}</span>`).join('')}</div>`;
+}
+function navHtml(){
+  const last=CSTEP===CSTEPS.length-1;
+  return `<div class="wiznav"><button class="btn ghost" data-act="stepBack">${t('back')}</button>${last?`<button class="btn primary" data-act="start">${t('begin')}</button>`:`<button class="btn primary" data-act="stepNext">${t('next')}</button>`}</div>`;
+}
 function renderCreate(){
   view='create';
   if(!CFG.name)CFG.name=randName(CFG.sex);
-  const ageBonus=b=>Object.entries(bgObj(b).bonus).map(([k,v])=>`+${v} ${statN(k)}`).join(', ');
-  main().innerHTML=`<section><div class="create-grid">
-    <div>
-      <div class="sect"><h2>${t('road')}</h2>
-        <div class="seg" role="group" aria-label="${t('road')}">${[5,15,20].map(n=>`<button data-act="roadseg" data-v="${n}">${t('yearsShort',n)}</button>`).join('')}</div>
-        <p class="small" id="roadnote" style="margin-top:8px"></p></div>
-      <div class="sect"><h2>${t('hWho')}</h2><p>${t('pWho')}</p>
-        <div class="field"><label for="nm">${t('name')}</label><input type="text" id="nm" maxlength="20" value="${esc(CFG.name)}" autocomplete="off"><button class="btn sm" data-act="randname">${t('roll')}</button></div>
-        <div class="field"><label>${t('sex')}</label><div class="seg" role="group" aria-label="${t('sex')}"><button data-act="sex" data-v="m">${t('male')}</button><button data-act="sex" data-v="f">${t('female')}</button></div></div>
-        <div class="field"><label for="age">${t('age')}</label><input type="range" id="age" min="18" max="60" value="${CFG.age}"><span class="ageout num" id="ageout">${CFG.age}</span></div>
-        <p class="small" id="agenote"></p>
-        <div class="field" style="margin-top:12px"><label>${t('skin')}</label><div class="swatches">${SKINS.map((c,i)=>`<button class="sw" data-act="skin" data-v="${i}" style="background:${c}" aria-label="${t('skin')} ${i+1}"></button>`).join('')}</div></div>
-      </div>
-      <div class="sect"><h2>${t('hWhere')}</h2><p>${t('pWhere')}</p>
-        <div class="board">
-          ${LOC_ORDER.map(id=>{const l=LOCS[id];return`<button class="lrow" data-act="loc" data-v="${id}"><span class="code">${l.code}</span><span class="nm">${locName(id)}</span><span class="sev" title="${t('outbreak')} ${l.outbreak}%">${cellsHtml(l.outbreak,10,'out sm')}</span><span class="stg">${tt('stg',stageOf(l.outbreak))}</span></button>`;}).join('')}
-          <button class="lrow" data-act="loc" data-v="random"><span class="code">?</span><span class="nm">${t('random')}</span><span></span><span class="stg">${t('unknown')}</span></button>
-        </div>
-        <div class="brief" id="brief"></div>
-      </div>
-      <div class="sect"><h2>${t('hBg')}</h2><p>${t('pBg')}</p>
-        <div class="bgrid">
-          ${BGS.map(b=>`<button class="brow" data-act="bg" data-v="${b.id}">${canvasHtml(sprCreate(b.id),2,'',`data-bgid="${b.id}"`)}<span class="btxt"><span class="nm" data-bgname="${b.id}">${bgN(b.id,CFG.sex)}</span><span class="pk">${bgPerk(b.id)}</span><span class="bn">${ageBonus(b.id)}</span></span></button>`).join('')}
-          <button class="brow" data-act="bg" data-v="random">${canvasHtml(sprCreate('?'),2)}<span class="btxt"><span class="nm">${t('random')}</span><span class="pk">${t('pRandomBg')}</span></span></button>
-        </div>
-      </div>
-    </div>
-    <div class="tagwrap"><div id="tag"></div>
-      <div class="startbar"><button class="btn primary" data-act="start">${t('begin')}</button><button class="btn" data-act="randall">${t('randAll')}</button></div>
-    </div>
-  </div></section>`;
-  updateCreate();applyLang();
+  const body=[stepWho,stepWhere,stepPast,stepReady][CSTEP]();
+  main().innerHTML=`<section class="wiz"><div class="create-grid"><div>
+    <div class="wiztop">${stepperHtml()}<button class="btn sm ghost" data-act="randall">${t('randAll')}</button></div>
+    ${chipsHtml()}
+    <div class="sect wizbody">${body}</div>
+    ${navHtml()}
+  </div><div class="tagwrap"><div id="tag"></div></div></div></section>`;
+  updateCreate();applyLang();window.scrollTo({top:0});
 }
 function updateCreate(){
   const q=(sel,f)=>document.querySelectorAll(sel).forEach(f);
   q('[data-act="sex"]',b=>b.setAttribute('aria-pressed',String(b.dataset.v===CFG.sex)));
   q('[data-act="loc"]',b=>b.setAttribute('aria-pressed',String(b.dataset.v===CFG.loc)));
   q('[data-act="bg"]',b=>b.setAttribute('aria-pressed',String(b.dataset.v===CFG.bg)));
-  q('[data-act="roadseg"]',b=>b.setAttribute('aria-pressed',String(+b.dataset.v===CFG.road)));
   q('[data-act="skin"]',b=>b.setAttribute('aria-pressed',String(+b.dataset.v===CFG.skin)));
   q('[data-bgname]',n=>{n.textContent=bgN(n.dataset.bgname,CFG.sex);});
   q('canvas[data-bgid]',cv=>{cv.dataset.o=JSON.stringify(sprCreate(cv.dataset.bgid));});
-  const rn=$('roadnote');if(rn)rn.textContent=tt('roads',CFG.road)[2];
-  const al=tt('ageLbl',ageMods(CFG.age).label);
-  $('agenote').textContent=`${al[0]}: ${al[1]}`;
-  $('ageout').textContent=CFG.age;
+  const an=$('agenote');if(an){const al=tt('ageLbl',ageMods(CFG.age).label);an.textContent=`${al[0]}: ${al[1]}`;}
+  const ao=$('ageout');if(ao)ao.textContent=CFG.age;
   const brief=$('brief');
-  if(CFG.loc==='random')brief.innerHTML=`<p>${t('pRandomLoc')}</p>`;
-  else{const l=LOCS[CFG.loc];brief.innerHTML=`<p>${locBrief(CFG.loc)}</p><div class="meta"><span>${t('outbreak')}: <b>${tt('stg',stageOf(l.outbreak))}</b> (${l.outbreak}%)</span><span>${t('order')}: <b>${tt('ord',orderOf(l.order))}</b> (${l.order}%)</span></div>`;}
+  if(brief){
+    if(CFG.loc==='random')brief.innerHTML=`<p>${t('pRandomLoc')}</p>`;
+    else{const l=LOCS[CFG.loc];brief.innerHTML=`<p>${locBrief(CFG.loc)}</p><div class="meta"><span>${t('outbreak')}: <b>${tt('stg',stageOf(l.outbreak))}</b> (${l.outbreak}%)</span><span>${t('order')}: <b>${tt('ord',orderOf(l.order))}</b> (${l.order}%)</span></div>`;}
+  }
   const b=CFG.bg==='random'?null:bgObj(CFG.bg);
   const st=calcStats(CFG.age,b?b.id:null);
   const hp=50+st.health*5;
@@ -408,21 +433,24 @@ document.addEventListener('click',e=>{
   if(a==='trophies'){closeModal();return renderTrophies();}
   if(a==='troBack')return leaveTrophies();
   if(a==='troTab'){TROTAB=v;return renderTrophies();}
-  if(a==='road'){CFG=freshCfg(+v);return renderCreate();}
-  if(a==='new'){CFG=freshCfg(G&&G.cfg?G.cfg.road:CFG.road);return renderCreate();}
+  if(a==='road'){CFG=freshCfg(+v);CSTEP=0;return renderCreate();}
+  if(a==='new'){CFG=freshCfg(G&&G.cfg?G.cfg.road:CFG.road);CSTEP=0;return renderCreate();}
   if(a==='continue'){const s=load();if(s){G=s;renderPlay();}return;}
-  if(a==='restart'){if(view==='create'){CFG=freshCfg(CFG.road);return renderCreate();}if(G&&(view==='play'||view==='end'))return showModal();return;}
+  if(a==='restart'){if(view==='create'){CFG=freshCfg(CFG.road);CSTEP=0;return renderCreate();}if(G&&(view==='play'||view==='end'))return showModal();return;}
   if(a==='mCancel')return closeModal();
   if(a==='mSame'){closeModal();if(G&&G.cfg){newGame(G.cfg);renderPlay();window.scrollTo({top:0});}return;}
-  if(a==='mNew'){closeModal();CFG=freshCfg(G&&G.cfg?G.cfg.road:5);return renderCreate();}
-  if(a==='randname'){CFG.name=randName(CFG.sex);CFG.auto=true;$('nm').value=CFG.name;return updateCreate();}
-  if(a==='sex'){CFG.sex=v;if(CFG.auto){CFG.name=randName(v);$('nm').value=CFG.name;}return updateCreate();}
+  if(a==='mNew'){closeModal();CFG=freshCfg(G&&G.cfg?G.cfg.road:5);CSTEP=0;return renderCreate();}
+  if(a==='randname'){CFG.name=randName(CFG.sex);CFG.auto=true;nmField();return updateCreate();}
+  if(a==='sex'){CFG.sex=v;if(CFG.auto){CFG.name=randName(v);nmField();}return updateCreate();}
   if(a==='loc'){CFG.loc=v;return updateCreate();}
   if(a==='bg'){CFG.bg=v;return updateCreate();}
-  if(a==='roadseg'){CFG.road=+v;return updateCreate();}
+  
   if(a==='skin'){CFG.skin=+v;return updateCreate();}
-  if(a==='randall'){CFG.sex=pick(['m','f']);CFG.age=18+rnd(43);CFG.name=randName(CFG.sex);CFG.auto=true;CFG.loc='random';CFG.bg='random';CFG.skin=rnd(4);return renderCreate();}
+  if(a==='randall'){CFG.sex=pick(['m','f']);CFG.age=18+rnd(43);CFG.name=randName(CFG.sex);CFG.auto=true;CFG.loc='random';CFG.bg='random';CFG.skin=rnd(4);CSTEP=CSTEPS.length-1;return renderCreate();}
   if(a==='start')return startFromCreate();
+  if(a==='stepNext'){CSTEP=Math.min(CSTEPS.length-1,CSTEP+1);return renderCreate();}
+  if(a==='stepBack'){if(CSTEP===0)return renderTitle();CSTEP--;return renderCreate();}
+  if(a==='stepGo'){CSTEP=Math.max(0,Math.min(CSTEPS.length-1,+v));return renderCreate();}
   if(a==='choose')return doChoose(+t0.dataset.i);
   if(a==='skip')return finishRoll();
   if(a==='meds')return doMeds();

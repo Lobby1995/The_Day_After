@@ -1,0 +1,23 @@
+
+/* creation wizard: one page per step */
+.wiztop{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;justify-content:space-between;margin-bottom:18px}
+.stepper{list-style:none;display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0}
+.stepper li button,.stepper li div{display:flex;align-items:center;gap:8px;padding:.45em .9em .45em .6em;background:var(--surface);border:2px solid var(--border);border-radius:3px;color:var(--muted);font-family:var(--f-head);font-size:.82rem;letter-spacing:.06em;text-transform:uppercase}
+.stepper li button{cursor:pointer;color:var(--secondary)}
+.stepper li button:hover{border-color:var(--accent);color:var(--text)}
+.stepper li i{display:grid;place-items:center;width:1.7rem;height:1.7rem;font-style:normal;background:#111;border:2px solid var(--border);border-radius:2px;color:var(--muted)}
+.stepper li.cur div{border-color:var(--accent);color:var(--text);background:#262626}
+.stepper li.cur i{background:var(--accent);border-color:var(--accent);color:#000}
+.stepper li.done i{background:var(--primary);border-color:var(--primary-hover);color:var(--text)}
+.chips-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.cchip{padding:.3em .8em;background:#161616;border:1px solid var(--border);border-inline-start:4px solid var(--primary-hover);border-radius:2px;color:var(--text);font:inherit;font-size:.88rem}
+button.cchip{cursor:pointer}
+button.cchip:hover{border-color:var(--accent)}
+.cchip.fixed{color:var(--muted)}
+.wizbody{min-height:260px}
+.wiznav{display:flex;justify-content:space-between;gap:12px;margin-top:8px}
+.sumlist{display:grid;gap:10px;margin-top:6px}
+.sumrow{display:flex;align-items:center;gap:14px;padding:12px 16px;background:var(--surface);border:2px solid var(--border);border-inline-start:6px solid var(--primary-hover);border-radius:4px}
+.sumrow .sk{color:var(--secondary);font-family:var(--f-head);font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;min-width:110px}
+.sumrow .sv{flex:1;font-size:1.05rem;font-weight:500}
+@media(max-width:560px){.stepper li span{display:none}.stepper li.cur span{display:inline}.sumrow{flex-wrap:wrap}}

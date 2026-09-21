@@ -38,6 +38,6 @@ module.exports={
   ],
   styles:[
     'styles/01-base.css','styles/02-header-and-buttons.css','styles/03-title.css','styles/04-creation.css',
-    'styles/05-play.css','styles/06-side-panels.css','styles/07-ending-and-dialog.css','styles/08-trophies-and-toasts.css',
+    'styles/05-play.css','styles/06-side-panels.css','styles/07-ending-and-dialog.css','styles/08-trophies-and-toasts.css','styles/09-creation-wizard.css',
   ],
 };
