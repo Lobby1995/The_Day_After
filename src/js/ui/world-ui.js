@@ -4,6 +4,9 @@
  * glowing ring (or press Go), and then it opens exactly as it always did. Nothing about the choices or the rolls changes.
  */
 let WMODE=false,WOPEN=false,WS=null,WCUR=null,WRAF=0,WLAST=0,WMSGT=0;
+const WMODES=['walk','sneak','run'];
+/* how you are moving: hold Shift to run, hold C to sneak; otherwise the mode set with the button */
+const worldMode=()=>!WS?'walk':WS.sneak?'sneak':WS.run?'run':(WS.base||'walk');
 try{WMODE=localStorage.getItem('daysafter.world')==='1';}catch(e){}
 
 const worldOn=()=>!!(WMODE&&view==='play'&&G&&G.cur);
@@ -21,7 +24,7 @@ function worldBoxHtml(){
   return `<div class="worldbox${WOPEN?' open':''}" id="worldbox">
     <canvas id="worldcv" width="${WCW}" height="${WCH}" role="img" aria-label="${esc(t('worldAria'))}"></canvas>
     <div class="wmsg" id="worldmsg" role="status" aria-live="polite"></div>
-    <div class="wbar"><span class="wplace">${esc(worldPlace())}</span>${WS&&WS.z.length&&!WOPEN?`<span class="wz" title="${esc(t('worldZ'))}">\u{1F9DF} ${WS.z.length}</span>`:''}<span class="whint">${t('worldHint')}</span>
+    <div class="wbar"><span class="wplace">${esc(worldPlace())}</span><button class="btn sm ghost" id="worldModeBtn" data-act="worldMode" title="${esc(t('worldModeTip'))}">${t('worldMode_'+worldMode())}</button><span class="whint">${t('worldHint')}</span>
       <button class="btn sm primary" data-act="worldGo">${t('worldGo')}</button><button class="btn sm ghost" data-act="worldSkip">${t('worldSkip')}</button></div></div>`;
 }
 
@@ -32,8 +35,9 @@ function worldSync(){
   if(!WS||WCUR!==G.cur){
     WCUR=G.cur;
     /* one to three zombies, by how far the outbreak has gone. the same question always gets the same ones. */
-    const n=1+(G.w.outbreak>=35?1:0)+(G.w.outbreak>=70?1:0),seed=(G.w.day*7+G.st.decisions*13+hash(G.cur.id))>>>0;
-    WS=worldNew(worldSceneId(G.cur.id),G.p.loc,{zombies:n,seed});
+    const sid=worldSceneId(G.cur.id),n=worldZombieCount(G.cur.id,sid,G.w.outbreak),seed=(G.w.day*7+G.st.decisions*13+hash(G.cur.id))>>>0;
+    /* the first scenes of the story stay small and calm; everything after is bigger, so the way to the question is longer */
+    WS=worldNew(sid,G.p.loc,{zombies:n,seed,grow:!/^pro_/.test(G.cur.id),stealth:G.p.stats.stealth});
     WOPEN=!!G.cur.res;                                   // a question that was already answered opens at once
     if(WOPEN){WS.z=[];WS.frozen=true;}
   }
@@ -79,6 +83,7 @@ function worldMessage(text){
 /* one step of time: walk, and open the question if you have arrived */
 function worldPump(dt){
   if(!WS)return;
+  WS.mode=worldMode();
   worldTick(WS,dt);
   /* a bite costs health and adds infection: the same numbers the rest of the game uses */
   while(WS.events.length){
@@ -112,6 +117,20 @@ if(typeof document!=='undefined'&&document.addEventListener){
     const tg=ev.target&&ev.target.tagName;if(tg==='INPUT'||tg==='TEXTAREA'||tg==='SELECT')return;
     const m=$('modal');if(m&&m.innerHTML&&m.innerHTML.trim())return;
     const key=ev.key&&ev.key.length===1?ev.key.toLowerCase():ev.key;
+    if(key==='Shift'){WS.run=true;return;}
+    if(key==='c'){WS.sneak=true;return;}
     if(worldKey(WS,key)&&ev.preventDefault)ev.preventDefault();
   });
+  document.addEventListener('keyup',ev=>{
+    if(!WS)return;
+    if(ev.key==='Shift')WS.run=false;
+    if(ev.key==='c'||ev.key==='C')WS.sneak=false;
+  });
+}
+
+/* the button cycles walk, sneak, run: for touch screens, and for anyone who does not want to hold a key */
+function worldCycleMode(){
+  if(!WS)return;
+  WS.base=WMODES[(WMODES.indexOf(WS.base||'walk')+1)%WMODES.length];
+  const b=$('worldModeBtn');if(b)b.textContent=t('worldMode_'+worldMode());
 }

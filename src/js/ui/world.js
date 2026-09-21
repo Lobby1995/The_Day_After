@@ -4,7 +4,8 @@
  * This file is pure drawing and movement. It does not know about the questions; screens.js connects the two.
  */
 const WTW=96,WTH=48,WCW=1040,WCH=660;                      // tile width and height, canvas size
-const WSPEED=3.2,WZSPEED=1.6,WZDELAY=1600;                // tiles per second: you walk, they walk slower. they wait a moment before they start
+const WSPEED=3.2,WZDELAY=1000;                             // tiles per second when you walk. how you move (sneak, walk, run) scales it
+const WMODESPEED={sneak:.55,walk:1,run:1.6};
 const WBLOCK='#%YTKCBSMVOLFENIAQUGPRwgJZ';                    // characters you cannot walk through
 const WSHADE=(hex,a)=>shadeC(hex,a);
 const wcol=base=>({t:WSHADE(base,.14),l:WSHADE(base,-.38),r:WSHADE(base,-.2)});
@@ -67,20 +68,62 @@ const WO={
 };
 
 /* ---------- a place, ready to walk in ---------- */
-function worldNew(id,loc,opt){
-  const S=WSCENES[id]||WSCENES.street;
-  if(!S.rows){
-    S.rows=S.map;S.h=S.rows.length;S.w=S.rows[0].length;
-    S.rows.forEach((r,y)=>{for(let x=0;x<r.length;x++){if(r[x]==='@')S.start=[x,y];if(r[x]==='X')S.spot=[x,y];}});
-    const TALL={'#':110,'%':150,'Y':158,'L':114,'S':92};let tall=60;S.rows.forEach(r=>{for(const ch of r)if(TALL[ch])tall=Math.max(tall,TALL[ch]);});
-    S.tall=tall;
+/* read a map: where you come in, where the question waits, how tall the tallest thing is */
+function wParse(S){
+  if(S.rows)return S;
+  S.rows=S.map;S.h=S.rows.length;S.w=S.rows[0].length;
+  S.rows.forEach((r,y)=>{for(let x=0;x<r.length;x++){if(r[x]==='@')S.start=[x,y];if(r[x]==='X')S.spot=[x,y];}});
+  const TALL={'#':110,'%':150,'Y':158,'L':114,'S':92};let tall=60;S.rows.forEach(r=>{for(const ch of r)if(TALL[ch])tall=Math.max(tall,TALL[ch]);});
+  S.tall=tall;
+  return S;
+}
+/* a bigger version of a place: its inside is repeated, mirrored, into a grid of nx by ny, so a ward becomes a longer ward and a street a longer street.
+   you come in at the far corner and the question stays where it was: the way there is long, winding, and full of what the place is full of. */
+function worldBig(S0,nx,ny){
+  wParse(S0);
+  const key=nx+'x'+ny;S0._big=S0._big||{};
+  if(S0._big[key]!==undefined)return S0._big[key];
+  const inner=S0.rows.slice(1).map(r=>r.slice(1)),IH=inner.length,IW=inner[0].length,H=1+IH*ny,W=1+IW*nx;
+  const g=Array.from({length:H},()=>Array(W).fill('.'));
+  for(let x=0;x<W;x++)g[0][x]=S0.rows[0][1]||'#';
+  for(let y=0;y<H;y++)g[y][0]=S0.rows[1][0]||'#';
+  g[0][0]=S0.rows[0][0];
+  for(let ty=0;ty<ny;ty++)for(let tx=0;tx<nx;tx++)for(let iy=0;iy<IH;iy++)for(let ix=0;ix<IW;ix++){
+    let c=inner[ty%2?IH-1-iy:iy][tx%2?IW-1-ix:ix];
+    if(c==='@'||c==='X')c='.';
+    g[1+ty*IH+iy][1+tx*IW+ix]=c;
   }
-  const minY=-S.tall,maxY=(S.w+S.h)*WTH/2;
-  const cx=(S.w-S.h)*WTW/4;
+  const spot=S0.spot;g[spot[1]][spot[0]]='X';
+  /* you come in at the walkable tile nearest the far corner */
+  let start=null;
+  for(let d=0;d<H+W&&!start;d++)for(let y=H-1;y>=0&&!start;y--){const x=W-1-d+(H-1-y);if(x>=0&&x<W&&'#%Yw'.indexOf(g[y][x])<0&&WBLOCK.indexOf(g[y][x])<0)start=[x,y];}
+  if(!start){S0._big[key]=null;return null;}
+  g[start[1]][start[0]]='@';
+  const B=wParse({id:S0.id,name:S0.name,floor:S0.floor,outdoor:S0.outdoor,tint:S0.tint,npcs:S0.npcs,map:g.map(r=>r.join('')),big:true});
+  const path=worldPath(B,B.start,B.spot);
+  S0._big[key]=path&&path.length>=14?B:null;
+  return S0._big[key];
+}
+/* the camera follows the survivor when the place is bigger than the screen, and stays put when it fits */
+function worldCamera(W,dt,snap){
+  const S=W.S,minX=-S.h*WTW/2,maxX=S.w*WTW/2,minY=-S.tall,maxY=(S.w+S.h)*WTH/2;
+  let tx,ty;
+  if(maxX-minX<=WCW)tx=WCW/2-(minX+maxX)/2;else tx=Math.max(WCW-maxX-40,Math.min(-minX+40,WCW/2-(W.fx-W.fy)*WTW/2));
+  if(maxY-minY<=WCH)ty=(WCH-(maxY-minY))/2-minY;else ty=Math.max(WCH-maxY-40,Math.min(-minY+40,WCH*.58-(W.fx+W.fy)*WTH/2));
+  const k=snap?1:Math.min(1,dt/220);
+  W.ox+=(tx-W.ox)*k;W.oy+=(ty-W.oy)*k;
+}
+const worldScreen=(W,x,y)=>{const q=wIso(x,y);return[Math.round(W.ox)+q[0],Math.round(W.oy)+q[1]];};
+
+function worldNew(id,loc,opt){
+  let S=wParse(WSCENES[id]||WSCENES.street);
+  if(opt&&opt.grow){const g=S.grow||(/^(room_|home_)/.test(S.id)||S.id==='cabin'?[1,1]:[2,2]);if(g[0]*g[1]>1)S=worldBig(S,g[0],g[1])||S;}
   /* outdoors, the country decides the weather and the mood; indoors, nothing does */
   const out=S.outdoor&&WWEATHER[loc]?WWEATHER[loc]:{};
-  const W={S,id:S.id,weather:out.fx||null,tint:S.tint||out.tint||null,z:[],events:[],zdelay:WZDELAY,hurt:0,flash:0,frozen:false,ox:Math.round(WCW/2-cx),oy:Math.round((WCH-(maxY-minY))/2-minY),
+  const W={S,id:S.id,weather:out.fx||null,tint:S.tint||out.tint||null,z:[],events:[],zdelay:WZDELAY,hurt:0,flash:0,frozen:false,ox:0,oy:0,
+    mode:'walk',stealth:opt&&opt.stealth!=null?opt.stealth:5,
     cx:S.start[0],cy:S.start[1],fx:S.start[0]+.5,fy:S.start[1]+.5,path:[],face:1,t:0,walking:false,goal:null,arrived:false,near:false,queue:null};
+  worldCamera(W,0,true);
   worldSpawn(W,opt&&opt.zombies||0,opt&&opt.seed||1);
   return W;
 }
@@ -139,68 +182,11 @@ function worldTap(W,mx,my){
   if(!p)return false;
   W.path=p;W.goal=null;W.queue=null;return true;
 }
-/* ---------- zombies ----------
- * They walk, they do not run, and they walk straight at you one tile at a time, deciding again at every tile, like the ghosts in a maze.
- * A zombie that reaches you bites once: the game takes a few health and adds infection (see zombieBite). Then it loses interest.
- */
-const WZBG=['student','teacher','mechanic','soldier','politician','journalist','firefighter','doctor'];
-function wRng(seed){let a=seed>>>0;return()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};}
-/* how many steps from `from` to every tile you can walk to */
-function worldDistances(S,from){
-  const d={},q=[from];d[from[1]*S.w+from[0]]=0;
-  while(q.length){const [x,y]=q.shift(),k=y*S.w+x;
-    for(const m of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+m[0],ny=y+m[1],nk=ny*S.w+nx;
-      if(d[nk]!==undefined||!worldWalkable(S,nx,ny))continue;d[nk]=d[k]+1;q.push([nx,ny]);}}
-  return d;
-}
-function worldSpawn(W,n,seed){
-  const S=W.S;if(!n)return;
-  const rnd=wRng(seed*7919+S.w*31+S.h),dist=worldDistances(S,S.start),cands=[];
-  for(let y=0;y<S.h;y++)for(let x=0;x<S.w;x++){
-    const d=dist[y*S.w+x];
-    if(d===undefined||!worldWalkable(S,x,y))continue;
-    if(Math.abs(x-S.spot[0])+Math.abs(y-S.spot[1])<3)continue;
-    if(x===S.start[0]&&y===S.start[1])continue;
-    cands.push({x,y,d});
-  }
-  const far=cands.filter(c=>c.d>=6),list=(far.length>=n?far:cands.filter(c=>c.d>=3)).slice(),chosen=[];
-  while(chosen.length<n&&list.length){
-    const c=list.splice(Math.floor(rnd()*list.length),1)[0];
-    if(chosen.every(o=>Math.abs(o.x-c.x)+Math.abs(o.y-c.y)>=4))chosen.push(c);
-  }
-  chosen.forEach(c=>W.z.push({x:c.x,y:c.y,fx:c.x+.5,fy:c.y+.5,path:[],spawn:[c.x,c.y],stun:0,spent:false,walking:false,face:rnd()<.5?-1:1,
-    sex:rnd()<.5?'m':'f',age:24+Math.floor(rnd()*40),skin:Math.floor(rnd()*4),seed:Math.floor(rnd()*9),bg:WZBG[Math.floor(rnd()*WZBG.length)]}));
-}
-function worldZombies(W,dt){
-  const S=W.S,step=WZSPEED*dt/1000;
-  W.hurt=Math.max(0,W.hurt-dt);W.flash=Math.max(0,W.flash-dt);
-  if(W.zdelay>0){W.zdelay-=dt;return;}
-  W.z.forEach(z=>{
-    if(z.stun>0){z.stun-=dt;z.walking=false;return;}
-    if(z.path.length){
-      const n=z.path[0],tx=n[0]+.5,ty=n[1]+.5,dx=tx-z.fx,dy=ty-z.fy,d=Math.hypot(dx,dy),sdx=dx-dy;
-      if(sdx>.01)z.face=1;else if(sdx<-.01)z.face=-1;
-      if(d<=step){z.fx=tx;z.fy=ty;z.x=n[0];z.y=n[1];z.path.shift();}else{z.fx+=dx/d*step;z.fy+=dy/d*step;}
-      z.walking=true;
-    }else z.walking=false;
-    if(!z.path.length){                                  // at a tile: decide the next one, toward you (or home, once it has bitten)
-      const goal=z.spent?z.spawn:[W.cx,W.cy];
-      if(z.x!==goal[0]||z.y!==goal[1]){
-        const p=worldPath(S,[z.x,z.y],goal,(x,y)=>W.z.some(o=>o!==z&&o.x===x&&o.y===y));
-        if(p&&p.length)z.path=[p[0]];
-      }
-    }
-    if(!z.spent&&W.hurt<=0&&Math.hypot(z.fx-W.fx,z.fy-W.fy)<.62){
-      z.spent=true;z.stun=2600;z.path=[];z.x=Math.round(z.fx-.5);z.y=Math.round(z.fy-.5);z.fx=z.x+.5;z.fy=z.y+.5;
-      W.hurt=1600;W.flash=650;W.events.push({type:'bite'});
-    }
-  });
-}
 function worldTick(W,dt){
   W.t+=dt;
   const S=W.S;
   if(W.path.length){
-    const n=W.path[0],tx=n[0]+.5,ty=n[1]+.5,dx=tx-W.fx,dy=ty-W.fy,d=Math.hypot(dx,dy),step=WSPEED*dt/1000;
+    const n=W.path[0],tx=n[0]+.5,ty=n[1]+.5,dx=tx-W.fx,dy=ty-W.fy,d=Math.hypot(dx,dy),step=WSPEED*(WMODESPEED[W.mode]||1)*dt/1000;
     const sdx=dx-dy;if(sdx>.01)W.face=1;else if(sdx<-.01)W.face=-1;
     if(d<=step){W.fx=tx;W.fy=ty;W.cx=n[0];W.cy=n[1];W.path.shift();}else{W.fx+=dx/d*step;W.fy+=dy/d*step;}
     W.walking=true;
@@ -211,6 +197,7 @@ function worldTick(W,dt){
   if(!W.path.length&&W.cx===S.spot[0]&&W.cy===S.spot[1])W.arrived=true;
   W.near=Math.hypot(W.fx-(S.spot[0]+.5),W.fy-(S.spot[1]+.5))<2.2;
   if(!W.frozen)worldZombies(W,dt);
+  worldCamera(W,dt);
 }
 
 /* ---------- drawing ---------- */
@@ -229,16 +216,26 @@ function wSprite(D,fx,fy,opts,face,bob,shadow,alpha){
   },opts);
   c.globalAlpha=1;
 }
+/* what a zombie is up to, over its head: a red ! when it has seen you, a yellow ? when it heard something or lost you */
+const WGLYPH={'!':['00100','00100','00100','00100','00100','00000','00100'],'?':['01110','10001','00001','00110','00100','00000','00100']};
+function wZombieMark(D,z,bob){
+  if(z.spent)return;
+  const st=z.state,g=st==='chase'?'!':(st==='investigate'||st==='search')?'?':null;if(!g)return;
+  const q=wIso(z.fx,z.fy),px=4,x0=D.ox+q[0]-2.5*px,y0=D.oy+q[1]-118-(bob||0),col=g==='!'?'#e0432f':'#e6b93c';
+  WGLYPH[g].forEach((row,j)=>{for(let i=0;i<5;i++)if(row[i]==='1'){D.c.fillStyle='#000';D.c.fillRect(x0+i*px+2,y0+j*px+2,px,px);}});
+  WGLYPH[g].forEach((row,j)=>{for(let i=0;i<5;i++)if(row[i]==='1'){D.c.fillStyle=col;D.c.fillRect(x0+i*px,y0+j*px,px,px);}});
+}
 const wZombieOf=z=>({sex:z.sex,age:z.age,skin:z.skin,seed:z.seed,bg:z.bg,inf:92,hpP:.3,marks:[]});
 function wSpriteOf(n){return{sex:n.sex,age:n.age,skin:n.skin,seed:n.seed,bg:n.bg,inf:0,hpP:1,marks:[]};}
 function worldDraw(c,W,now){
-  const S=W.S,D={c,ox:W.ox,oy:W.oy};
+  const S=W.S,D={c,ox:Math.round(W.ox),oy:Math.round(W.oy)};
   now=now||0;
+  const vis=(x,y)=>{const px=D.ox+(x-y)*WTW/2,py=D.oy+(x+y)*WTH/2;return px>-170&&px<WCW+170&&py>-170&&py<WCH+170;};   // only draw what can be on screen
   c.globalAlpha=1;c.fillStyle='#0f0f0f';c.fillRect(0,0,WCW,WCH);
   const fl=WFLOOR[S.floor]||WFLOOR.concrete;
   /* floors, and the light pools of lamps and fires */
   for(let y=0;y<S.h;y++)for(let x=0;x<S.w;x++){
-    const ch=S.rows[y][x];if(ch==='#'||ch==='%'||ch==='Y')continue;
+    const ch=S.rows[y][x];if(ch==='#'||ch==='%'||ch==='Y'||!vis(x+.5,y+.5))continue;
     if(ch==='w'){
       wFlat(D,x,y,x+1,y+1,-3,(x+y)%2?'#1f3a4d':'#1b3446');
       const k=((x*3+y*5)+Math.floor(now/700))%4;
@@ -253,7 +250,7 @@ function worldDraw(c,W,now){
   /* light from lamps and fires, tile by tile, only where there is floor to light */
   for(let y=0;y<S.h;y++)for(let x=0;x<S.w;x++){
     const ch=S.rows[y][x];
-    if(ch!=='L'&&ch!=='F')continue;
+    if((ch!=='L'&&ch!=='F')||!vis(x+.5,y+.5))continue;
     const col=ch==='L'?'#f0c060':'#ff9a30',r=ch==='L'?3:2;
     for(let ty=y-r;ty<=y+r;ty++)for(let tx=x-r;tx<=x+r;tx++){
       if(tx<0||ty<0||tx>=S.w||ty>=S.h)continue;
@@ -266,17 +263,26 @@ function worldDraw(c,W,now){
   {const sp=S.spot,pulse=.5+.5*Math.sin(now/300);
    const ring=(r,alpha)=>{const pts=[];for(let i=0;i<28;i++){const a=i/28*Math.PI*2,p=[sp[0]+.5+Math.cos(a)*r,sp[1]+.5+Math.sin(a)*r],q=wIso(p[0],p[1]);pts.push([D.ox+q[0],D.oy+q[1]]);}wPoly(c,pts,'#c27803',alpha);};
    ring(.5,.30+.25*pulse);ring(.32,.22+.18*pulse);}
+  /* how loud you are: a ring on the floor around you while you move */
+  if(W.walking){const r=worldPresence(W).noise,pts=[];for(let i=0;i<32;i++){const a=i/32*Math.PI*2,q=wIso(W.fx+Math.cos(a)*r,W.fy+Math.sin(a)*r);pts.push([D.ox+q[0],D.oy+q[1]]);}wPoly(c,pts,'#c27803',W.mode==='run'?.13:.07);}
   /* everything that stands up, back to front */
   const items=[];
-  for(let y=0;y<S.h;y++)for(let x=0;x<S.w;x++){const ch=S.rows[y][x];if(WO[ch])items.push({d:x+y,fn:()=>WO[ch](D,x,y,now,S)});}
+  for(let y=0;y<S.h;y++)for(let x=0;x<S.w;x++){const ch=S.rows[y][x];if(WO[ch]&&vis(x+.5,y+.5))items.push({d:x+y,fn:()=>WO[ch](D,x,y,now,S)});}
   S.npcs.forEach(n=>items.push({d:n.x+n.y+.6,fn:()=>wSprite(D,n.x+.5,n.y+.5,wSpriteOf(n),n.face==='l'?-1:1,0)}));
-  W.z.forEach(z=>items.push({d:z.fx+z.fy-.3,fn:()=>wSprite(D,z.fx,z.fy,wZombieOf(z),z.face,z.walking?Math.abs(Math.sin(W.t/230+z.seed))*3:0,'#7a1410',z.spent?.7:0)}));
+  W.z.forEach(z=>items.push({d:z.fx+z.fy-.3,fn:()=>{const bb=z.walking?Math.abs(Math.sin(W.t/230+z.seed))*3:0;wSprite(D,z.fx,z.fy,wZombieOf(z),z.face,bb,'#7a1410',z.spent?.7:0);wZombieMark(D,z,bb);}}));
   const bob=W.walking?Math.abs(Math.sin(W.t/90))*5:0;
   items.push({d:W.fx+W.fy-.4,fn:()=>wSprite(D,W.fx,W.fy,sprGame(),W.face,bob)});
   items.sort((a,b)=>a.d-b.d).forEach(i=>i.fn());
   /* the arrow over the question */
   {const sp=S.spot,q=wIso(sp[0]+.5,sp[1]+.5),ax=D.ox+q[0],ay=D.oy+q[1]-96-Math.sin(now/260)*6;
    wPoly(c,[[ax-14,ay-16],[ax+14,ay-16],[ax,ay+6]],'#c27803');wPoly(c,[[ax-14,ay-16],[ax+14,ay-16],[ax,ay+6]],'#000',.15);}
+  /* when the question is off screen (a big place), an arrow at the edge of the picture points toward it */
+  {const sp=S.spot,q=wIso(sp[0]+.5,sp[1]+.5),px=D.ox+q[0],py=D.oy+q[1]-40,m=46;
+   if(px<m||px>WCW-m||py<m||py>WCH-m){
+     const cx=WCW/2,cy=WCH/2,dx=px-cx,dy=py-cy,k=Math.min((WCW/2-m)/Math.abs(dx||.001),(WCH/2-m)/Math.abs(dy||.001)),ex=cx+dx*k,ey=cy+dy*k,len=Math.hypot(dx,dy)||1,ux=dx/len,uy=dy/len;
+     const tri=(o,col)=>wPoly(c,[[ex+ux*(20+o),ey+uy*(20+o)],[ex-ux*6-uy*15+ux*o*.3,ey-uy*6+ux*15+uy*o*.3],[ex-ux*6+uy*15+ux*o*.3,ey-uy*6-ux*15+uy*o*.3]],col);
+     tri(3,'#000');tri(0,'#c27803');
+   }}
   /* the weather of the country, and the mood */
   const wx=W.weather,tint=W.tint;
   if(tint){c.fillStyle=tint;c.fillRect(0,0,WCW,WCH);}

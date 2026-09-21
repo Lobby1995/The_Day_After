@@ -192,7 +192,7 @@ wScene('hospital',{name:['The Ward','המחלקה'],floor:'tile',map:[
  '#..........M',
  '#@..........'],
  npcs:[{x:7,y:6,bg:'doctor',sex:'f',age:36,skin:2,seed:14,face:'l'}]});
-wScene('church',{name:['The Chapel','הקפלה'],floor:'wood',map:[
+wScene('church',{grow:[1,1],name:['The Chapel','הקפלה'],floor:'wood',map:[
  '############',
  '#....NN.....',
  '#...L..L....',
@@ -388,3 +388,22 @@ function worldSceneId(evId){
   if(/^echo_dil/.test(id))return'wild';
   return WPLACE[id]||'street';
 }
+
+/* ---------- how many zombies, and why ----------
+ * None until the outbreak has really begun in that country (a quiet start in Israel, Australia, Canada); they grow with the outbreak.
+ * The first minutes of the story are kept clear, except where the country is already falling apart (the United States).
+ * The scene changes it (streets are worse than a rooftop), and events about zombies always have some.
+ */
+const WZ_PLACE={street:1,wild:1,checkpoint:1,gasstation:1,market:1,station:1,hospital:1,harbor:0,warehouse:0,shop:0,police:0,church:0,hall:0,farm:0,basement:0,rooftop:-1,camp:-1,cabin:-2,home_young:-2,home_mid:-2,home_old:-2};
+const WZ_EVENT={horde:4,siege:3,gate_outbreak:3,arm_breach:3,arm_roof:2,walker:1,z_hospital:2,z_gas:2,z_river:1,z_dogs:1,bitten:1,arm_dogs:1};
+const WZ_CALM=/^(dil_|echo_dil|f_|cs_|g_|year_review|quiet_night|child|planting|rebuild|trader|caravan|settle_council|fork_leader|stranger|mara_)/;
+function worldZombieCount(evId,sceneId,outbreak){
+  const base=Math.max(0,Math.floor((outbreak-20)/14));           // 0 until the outbreak passes about 34%, then one more for every 14
+  if(/^pro_/.test(evId))return outbreak>=80?1:0;                  // the first two scenes: only where the country is already falling
+  if(/^open_/.test(evId))return Math.min(base,2);                  // the first night
+  let n=base>0?base+(WZ_PLACE[sceneId]||0):0;                    // a place changes how bad it is, but it cannot make it start
+  if(WZ_CALM.test(evId))n-=2;
+  if(WZ_EVENT[evId])n=Math.max(n,WZ_EVENT[evId]);
+  return Math.max(0,Math.min(5,n));
+}
+

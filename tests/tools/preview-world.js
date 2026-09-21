@@ -15,8 +15,10 @@ Object.keys(w.WSCENES).filter(id=>!only.length||only.includes(id)).forEach(id=>{
   G.p.bg=bg;G.p.sex='f';G.p.skin=1;
   const locs=(id==='street')?['usa','uk','japan','canada']:[G.p.loc];
   locs.forEach(loc=>{
-    const W=w.worldNew(id,loc,{zombies:3,seed:2});
-    W.cx=W.S.start[0]+2;W.cy=W.S.start[1]-2;W.fx=W.cx+.5;W.fy=W.cy+.5;
+    const W=w.worldNew(id,loc,{zombies:4,seed:2,grow:!process.env.SMALL});
+    W.cx=W.S.start[0];W.cy=W.S.start[1];
+    for(let i=0;i<8;i++){w.worldStep(W,-1,-1);for(let k=0;k<12;k++)w.worldTick(W,50);}      // walk a little way in
+    w.worldCamera(W,0,true);
     for(let i=0;i<60;i++)w.worldTick(W,50);      // three seconds of zombies walking toward the survivor
     const c=new SoftCtx(w.WCW,w.WCH);
     w.worldDraw(c,W,1500);

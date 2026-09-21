@@ -53,6 +53,7 @@ module.exports={
     'js/ui/share.js',             // the share card at the end of a run
     'js/ui/world-scenes.js',      // the world view: places, and which place a question happens in
     'js/ui/world.js',             // the world view: isometric drawing and walking
+    'js/ui/world-zombies.js',     // the world view: zombies that see, hear, wander, investigate, chase and lose you
     'js/ui/world-ui.js',          // the world view: joined to the game (button, keys, taps, the question opens on arrival)
     'js/ui/screens.js',           // title, creation, play, ending, wiring (must be last: it starts the app)
   ],

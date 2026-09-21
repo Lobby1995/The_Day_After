@@ -477,6 +477,7 @@ document.addEventListener('click',e=>{
     return renderCreate();}
   if(a==='start')return startFromCreate();
   if(a==='world')return worldToggle();
+  if(a==='worldMode')return worldCycleMode();
   if(a==='worldGo'){if(WS&&!WOPEN)worldGo(WS);return;}
   if(a==='worldSkip')return worldOpen();
   if(a==='share')return showShare();

@@ -60,42 +60,149 @@ if(w.worldNew('street','canada').weather!=='snow')bad('Canada should have snow')
 if(w.worldNew('street','usa').weather!=='embers')bad('the United States should have embers');
 if(w.worldNew('room_doctor','uk').weather||w.worldNew('room_doctor','uk').tint)bad('a room should have no weather');
 
-/* 3b. zombies: one to three, on the floor, far from where you start, apart from each other, and the same every time for the same question */
+/* 3b. zombies are placed on the floor, far from where you come in, apart from each other, and the same every time for the same question */
 {
-  const spawnOf=(id,seed)=>w.worldNew(id,'uk',{zombies:3,seed}).z.map(z=>z.x+','+z.y).join(' ');
-  ids.forEach(id=>{
-    const W=w.worldNew(id,'uk',{zombies:3,seed:5}),S=W.S,dist=w.worldDistances(S,S.start);
-    if(W.z.length<1||W.z.length>3)bad(id+': expected 1 to 3 zombies, got '+W.z.length);
+  const spawnOf=(id,seed,grow)=>w.worldNew(id,'uk',{zombies:5,seed,grow}).z.map(z=>z.x+','+z.y).join(' ');
+  ids.forEach(id=>[false,true].forEach(grow=>{
+    const W=w.worldNew(id,'uk',{zombies:5,seed:5,grow}),S=W.S,dist=w.worldDistances(S,S.start);
+    if(W.z.length<1||W.z.length>5)bad(`${id}: expected 1 to 5 zombies, got ${W.z.length}`);
     W.z.forEach((z,i)=>{
       if(!w.worldWalkable(S,z.x,z.y))bad(id+': a zombie was placed inside something');
       if((dist[z.y*S.w+z.x]||0)<3)bad(id+': a zombie starts almost on top of the survivor');
       if(Math.abs(z.x-S.spot[0])+Math.abs(z.y-S.spot[1])<3)bad(id+': a zombie starts on the question');
-      W.z.slice(i+1).forEach(o=>{if(Math.abs(z.x-o.x)+Math.abs(z.y-o.y)<4)bad(id+': two zombies start on top of each other');});
+      if(S.big&&(dist[z.y*S.w+z.x]||0)<8)bad(id+': in a big place, zombies should start far away');
+      if(!['idle','wander'].includes(z.state))bad(id+': zombies start unaware of you, not '+z.state);
+      W.z.slice(i+1).forEach(o=>{if(Math.abs(z.x-o.x)+Math.abs(z.y-o.y)<(S.big?3:4))bad(id+': two zombies start on top of each other');});
     });
-    if(spawnOf(id,5)!==spawnOf(id,5))bad(id+': the same question should always get the same zombies');
-  });
+    if(spawnOf(id,5,grow)!==spawnOf(id,5,grow))bad(id+': the same question should always get the same zombies');
+  }));
   if(w.worldNew('room_doctor','uk').z.length!==0)bad('with no zombies asked for, there should be none');
-  if(!(w.WZSPEED<w.WSPEED))bad('zombies walk, you walk faster: '+w.WZSPEED+' vs '+w.WSPEED);
 }
 
-/* 3c. a zombie walks at you, bites once, and loses interest; a frozen world does not bite */
+/* 3b2. how many zombies, and why: none until the outbreak begins, none in the first minutes unless the country is already falling */
 {
-  const mk=(zombies)=>{const W=w.worldNew('room_teacher','uk',{zombies,seed:3});W.zdelay=0;return W;};
-  const W=mk(2);
-  const d0=W.z.map(z=>Math.hypot(z.fx-W.fx,z.fy-W.fy));
-  for(let i=0;i<40;i++)w.worldTick(W,50);                                  // two seconds, standing still
-  const d1=W.z.map(z=>Math.hypot(z.fx-W.fx,z.fy-W.fy));
-  if(!d1.every((d,i)=>d<d0[i]))bad('zombies should walk toward the survivor: '+d0.map(Math.round)+' -> '+d1.map(Math.round));
-  for(let i=0;i<600;i++)w.worldTick(W,50);                                 // thirty seconds
-  if(W.events.length!==2)bad('each zombie should bite exactly once, got '+W.events.length+' bites from 2 zombies');
-  if(!W.z.every(z=>z.spent))bad('a zombie that has bitten should be spent');
-  const W2=mk(1);W2.z[0].x=W2.cx;W2.z[0].y=W2.cy;W2.z[0].fx=W2.fx;W2.z[0].fy=W2.fy;W2.frozen=true;
-  for(let i=0;i<40;i++)w.worldTick(W2,50);
-  if(W2.events.length)bad('a frozen world must not bite');
-  /* after a bite you are safe for a moment: two zombies on the same tile bite once, not twice at once */
-  const W3=mk(2);W3.z.forEach(z=>{z.x=W3.cx;z.y=W3.cy;z.fx=W3.fx;z.fy=W3.fy;});
-  w.worldTick(W3,50);
-  if(W3.events.length!==1)bad('two zombies arriving together should cost one bite, not two: '+W3.events.length);
+  const n=(ev,sc,o)=>w.worldZombieCount(ev,sc,o);
+  if(n('c_il_2','market',14)!==0)bad('a quiet start (Israel, 14%) should have no zombies in an ordinary place');
+  if(n('c_au_1','camp',6)!==0||n('us_1','street',22)!==0)bad('below the outbreak threshold there should be none');
+  if(n('pro_doctor','room_doctor',14)!==0||n('pro_age_1','home_mid',55)!==0)bad('the first scenes must be clear where the country is not yet falling');
+  if(n('pro_doctor','room_doctor',88)!==1||n('pro_age_0','home_young',88)!==1)bad('in a country that is already falling (the United States) even the first scenes have one');
+  if(n('open_uk','street',36)!==1||n('open_usa','street',88)!==2||n('open_israel','street',14)!==0)bad('the first night: one in Britain, two in the United States, none in Israel');
+  if(n('horde','street',60)<4)bad('a horde is at least four');
+  if(n('walker','street',14)!==1)bad('"One in the Alley" always has one');
+  if(n('z_hospital','hospital',88)!==5)bad('a hospital at the height of the outbreak is the worst: 5');
+  if(n('dil_cache','wild',55)>=n('c_uk_1','street',55))bad('a quiet moment (a dilemma) has fewer than the same place in an ordinary event');
+  for(const ev of['c_uk_1','z_dogs','horde','pro_x','open_usa'])for(const sc of['street','hospital','home_mid','rooftop']){
+    let last=-1;for(let o=0;o<=100;o+=2){const c=n(ev,sc,o);if(c<0||c>5)bad(`${ev}/${sc}@${o}: ${c} is out of range`);if(c<last&&ev!=='pro_x')bad(`${ev}/${sc}: the count must not fall as the outbreak grows (${last} -> ${c} at ${o})`);last=c;}
+  }
+}
+
+/* 3c. how a zombie behaves: unaware until it sees or hears you, then chases, then loses you */
+{
+  const mk=(id='street')=>{const W=w.worldNew(id,'uk',{zombies:0,seed:1});W.zdelay=0;return W;};
+  const zAt=(W,x,y,dir,state='idle')=>{const z={x,y,fx:x+.5,fy:y+.5,path:[],spawn:[x,y],stun:0,spent:false,walking:false,face:1,state,dir,think:0,timer:99999,lost:0,target:null,spd:1,sex:'m',age:30,skin:0,seed:1,bg:'student'};W.z.push(z);return z;};
+  const run=(W,ms)=>{for(let t=0;t<ms;t+=50)w.worldTick(W,50);};
+  /* the numbers behind it */
+  const P=(mode,stealth,walking)=>w.worldPresence({mode,stealth,walking});
+  if(P('walk',5,true).sight!==5||P('walk',5,true).noise!==3)bad('walking: seen from 5, heard from 3');
+  if(!(P('sneak',5,true).sight<P('walk',5,true).sight&&P('sneak',5,true).noise<P('walk',5,true).noise))bad('sneaking is quieter and harder to see');
+  if(!(P('run',5,true).noise>P('walk',5,true).noise))bad('running is louder');
+  if(!(P('walk',10,true).sight<P('walk',5,true).sight&&P('walk',1,true).sight>P('walk',5,true).sight))bad('a better stealth stat should be seen from less far');
+  if(!(P('walk',5,false).noise<P('walk',5,true).noise))bad('standing still is quieter than walking');
+  if(!(w.WZS.chase<w.WSPEED*w.WMODESPEED.walk&&w.WZS.chase>w.WSPEED*w.WMODESPEED.sneak))bad('a chasing zombie is slower than you walking, and faster than you sneaking');
+  if(!(w.WMODESPEED.sneak<w.WMODESPEED.walk&&w.WMODESPEED.walk<w.WMODESPEED.run))bad('sneak, walk, run should get faster');
+  /* line of sight: a car blocks it, a crate does not */
+  {const S=mk().S;
+   if(w.worldLOS(S,1,2,7,2))bad('a car should block the line of sight');
+   if(!w.worldLOS(S,1,2,3,2))bad('clear ground should not block it');
+   if(!w.worldLOS(S,1,1,9,1))bad('a crate is low: it does not block sight');}
+  /* far away and not facing you: it does not know you are there, and it does not walk at you */
+  {const W=mk(),z=zAt(W,10,1,[1,0]);run(W,6000);
+   if(z.state==='chase'||z.state==='investigate')bad('a zombie far away must not notice you: '+z.state);
+   if(W.events.length)bad('a zombie far away must not bite');}
+  /* it sees you: close, in front of it, nothing in between */
+  {const W=mk(),z=zAt(W,5,8,[-1,0]);run(W,300);
+   if(z.state!=='chase')bad('a zombie facing you at 4 tiles with a clear view should see you, was '+z.state);}
+  /* it is looking the other way and you are quiet: it does not */
+  {const W=mk(),z=zAt(W,5,8,[1,0]);run(W,600);
+   if(z.state!=='idle')bad('a zombie facing away, with you standing still, should not notice, was '+z.state);}
+  /* sneaking: too far to be seen at 4 tiles */
+  {const W=mk();W.mode='sneak';const z=zAt(W,5,8,[-1,0]);run(W,600);
+   if(z.state==='chase')bad('a sneaking survivor should not be seen from 4 tiles');
+   const W2=mk();W2.mode='walk';const z2=zAt(W2,5,8,[-1,0]);run(W2,600);
+   if(z2.state!=='chase')bad('the same survivor walking should be seen');}
+  /* stealth stat: 10 is seen from less far than 1 */
+  {const a=mk();a.stealth=10;const za=zAt(a,5,8,[-1,0]);run(a,500);
+   const b=mk();b.stealth=1;const zb=zAt(b,6,8,[-1,0]);run(b,500);
+   if(za.state==='chase')bad('a very stealthy survivor should not be seen from 4 tiles');
+   if(zb.state!=='chase')bad('a clumsy survivor is seen from 5 tiles');}
+  /* sound goes through walls: running makes a zombie that is looking away come and look */
+  {const W=mk();W.mode='run';W.walking=true;W.path=[[W.cx+1,W.cy]];const z=zAt(W,1,3,[1,0]);   // 5 tiles away, behind the car row, facing away
+   run(W,50);W.path=[];W.walking=true;w.worldTick(W,50);run(W,200);
+   if(!['investigate','chase'].includes(z.state))bad('a running survivor should be heard, and the zombie should come to look: '+z.state);}
+  /* it goes to where the sound was, and then looks around */
+  {const W=mk(),z=zAt(W,6,8,[1,0],'investigate');z.target=[8,8];z.timer=7000;
+   run(W,6000);
+   if(z.state==='investigate')bad('a zombie that has reached the sound should stop investigating');}
+  /* it loses you: out of sight for a few seconds, it stops chasing */
+  {const W=mk(),z=zAt(W,5,8,[-1,0],'chase');z.last=[1,8];
+   W.cx=10;W.cy=1;W.fx=10.5;W.fy=1.5;               // you are gone, far away
+   run(W,5500);
+   if(z.state==='chase')bad('a zombie that has lost you for a while should stop chasing');}
+  /* one that has seen you calls the ones near it */
+  {const W=mk(),a=zAt(W,5,8,[-1,0]),b=zAt(W,7,8,[1,0]);run(W,400);
+   if(a.state!=='chase')bad('the first should chase');
+   if(b.state!=='investigate'&&b.state!=='chase')bad('the one next to it should be called: '+b.state);}
+  /* a chasing zombie catches someone who stands still, bites once, and loses interest */
+  {const W=mk(),z=zAt(W,5,8,[-1,0],'chase');run(W,9000);
+   if(W.events.length!==1)bad('one zombie should bite once, got '+W.events.length);
+   if(!z.spent||z.state!=='home')bad('a zombie that has bitten goes home');}
+  /* a frozen world does not bite */
+  {const W=mk();W.frozen=true;const z=zAt(W,1,8,[-1,0],'chase');z.x=W.cx;z.y=W.cy;z.fx=W.fx;z.fy=W.fy;run(W,2000);
+   if(W.events.length)bad('a frozen world must not bite');}
+  /* two arriving together cost one bite, not two */
+  {const W=mk();for(let i=0;i<2;i++){const z=zAt(W,W.cx,W.cy,[1,0],'chase');z.fx=W.fx;z.fy=W.fy;}
+   w.worldTick(W,50);if(W.events.length!==1)bad('two zombies arriving together should cost one bite: '+W.events.length);}
+}
+
+/* 3e. bigger places: the inside is repeated, you come in at the far corner, and there is always a long way to the question */
+{
+  let bigCount=0;
+  ids.forEach(id=>{
+    const small=w.worldNew(id,'uk'),W=w.worldNew(id,'uk',{grow:true}),S=W.S;
+    if(!S.big){if(/^(room_|home_)/.test(id)||id==='cabin'||id==='church')return;bad(id+': expected a bigger version');return;}
+    bigCount++;
+    if(S.w<=small.S.w||S.h<=small.S.h)bad(id+': the big version is not bigger');
+    const p=w.worldPath(S,S.start,S.spot);
+    if(!p||p.length<14)bad(`${id}: the way to the question is too short (${p&&p.length})`);
+    if(S.spot[0]!==small.S.spot[0]||S.spot[1]!==small.S.spot[1])bad(id+': the question moved');
+    if(S.npcs!==small.S.npcs&&JSON.stringify(S.npcs)!==JSON.stringify(small.S.npcs))bad(id+': the people changed');
+    if(S.rows.some(r=>r.length!==S.w))bad(id+': a big place is not rectangular');
+    if(!S.rows[S.start[1]]||S.rows[S.start[1]][S.start[0]]!=='@')bad(id+': no entrance');
+  });
+  if(bigCount<16)bad('every place except the rooms, homes, cabin and chapel should have a big version, only '+bigCount+' do');
+  ['room_doctor','home_mid','cabin','church'].forEach(id=>{if(w.worldNew(id,'uk',{grow:true}).S.big)bad(id+' is small on purpose (the story\'s first scenes stay small)');});
+}
+
+/* 3f. the camera follows you in a big place, and taps still land where you tap */
+{
+  const W=w.worldNew('street','uk',{grow:true});
+  const [sx,sy]=w.worldScreen(W,W.fx,W.fy);
+  if(sx<60||sx>w.WCW-60||sy<60||sy>w.WCH-40)bad('at the start, the survivor should be on screen: '+sx+','+sy);
+  const sp=W.S.spot;W.cx=sp[0];W.cy=sp[1];W.fx=sp[0]+.5;W.fy=sp[1]+.5;w.worldCamera(W,0,true);
+  const [qx,qy]=w.worldScreen(W,W.fx,W.fy);
+  if(qx<60||qx>w.WCW-60||qy<60||qy>w.WCH-40)bad('after walking to the question, the survivor should still be on screen: '+qx+','+qy);
+  /* a tap on a walkable tile walks there */
+  let target=null;for(let y=0;y<W.S.h&&!target;y++)for(let x=0;x<W.S.w&&!target;x++){if(w.worldWalkable(W.S,x,y)&&Math.abs(x-W.cx)+Math.abs(y-W.cy)>2){const [tx,ty]=w.worldScreen(W,x+.5,y+.5);if(tx>80&&tx<w.WCW-80&&ty>80&&ty<w.WCH-60)target=[x,y,tx,ty];}}
+  if(!target)bad('no walkable tile on screen to tap');
+  else{W.path=[];if(!w.worldTap(W,target[2],target[3]))bad('tapping a walkable tile should walk there');
+    const last=W.path[W.path.length-1];if(!last||last[0]!==target[0]||last[1]!==target[1])bad('the tap landed on a different tile: '+JSON.stringify(last)+' vs '+target[0]+','+target[1]);}
+}
+
+/* 3g. running gets there sooner than walking, walking sooner than sneaking */
+{
+  const time=(mode)=>{const W=w.worldNew('street','uk',{zombies:0});W.mode=mode;w.worldGo(W);let t=0;for(;t<60000&&!W.arrived;t+=50)w.worldTick(W,50);return t;};
+  const tr=time('run'),tw=time('walk'),ts=time('sneak');
+  if(!(tr<tw&&tw<ts))bad(`run ${tr}ms, walk ${tw}ms, sneak ${ts}ms: should get slower`);
 }
 
 /* 3d. what a bite costs: 3 to 5 health, 5 infection, and it never kills outright */
@@ -143,10 +250,11 @@ ids.forEach(id=>{
 class Watch extends SoftCtx{constructor(a,b){super(a,b);this.bigRects=0;}
   fillRect(x,y,ww,hh){if(ww>=48&&hh>=96&&ww<200&&hh<200)this.bigRects++;return super.fillRect(x,y,ww,hh);}}
 ids.forEach(id=>{
-  ['uk','japan'].forEach(loc=>{
+  ['uk','japan'].forEach((loc,li)=>{
     try{
-      const W=w.worldNew(id,loc),c=new Watch(w.WCW,w.WCH);
-      W.cx=W.S.start[0]+2;W.cy=W.S.start[1]-2;W.fx=W.cx+.5;W.fy=W.cy+.5;
+      const W=w.worldNew(id,loc,{grow:li===1,zombies:4,seed:3}),c=new Watch(w.WCW,w.WCH);
+      W.z.forEach((z,i)=>{z.state=['chase','investigate','search','idle'][i%4];});     // draw every kind of marker
+      for(let i=0;i<10;i++)w.worldTick(W,50);
       w.worldDraw(c,W,900);
       const seen=new Set();for(let i=0;i<c.data.length;i+=4*97)seen.add(c.data[i]+','+c.data[i+1]+','+c.data[i+2]);
       if(seen.size<8)bad(id+': the picture is nearly blank ('+seen.size+' colors)');

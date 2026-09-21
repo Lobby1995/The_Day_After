@@ -176,11 +176,15 @@ Object.assign(UI.he,{shareBtn:'שיתוף',shareH:'לשתף את הריצה',sha
 
 /* the world view */
 Object.assign(UI.en,{worldBtn:'World',worldAria:'A view of the place you are in. Walk with the arrow keys or by tapping.',
-  worldHint:'Arrow keys or a tap to walk. Reach the glowing ring before the zombies reach you.',worldGo:'Go there',worldSkip:'Skip to the text'});
+  worldHint:'Arrow keys or a tap to walk. Hold Shift to run, C to sneak. Zombies notice what they see and what they hear: stay quiet, stay out of sight, reach the ring.',worldGo:'Go there',worldSkip:'Skip to the text'});
 Object.assign(UI.he,{worldBtn:'עולם',worldAria:'מבט על המקום שבו אתם נמצאים. הולכים עם מקשי החצים או בנגיעה.',
-  worldHint:'מקשי החצים או נגיעה כדי ללכת. להגיע לטבעת הזוהרת לפני שהזומבים מגיעים אליכם.',worldGo:'ללכת לשם',worldSkip:'לדלג לטקסט'});
+  worldHint:'מקשי החצים או נגיעה כדי ללכת. Shift לרוץ, C להתגנב. זומבים מבחינים במה שהם רואים ובמה שהם שומעים: לשמור על שקט, להישאר מחוץ לטווח הראייה, ולהגיע לטבעת.',worldGo:'ללכת לשם',worldSkip:'לדלג לטקסט'});
 
 /* zombies in the world view */
 Object.assign(UI.en,{worldZ:'Zombies in this place',worldBite:(h,i)=>`A zombie got you: \u2212${h} health, +${i} infection.`});
 Object.assign(UI.he,{worldZ:'זומבים במקום הזה',worldBite:(h,i)=>`זומבי תפס אתכם: \u2212${h} בריאות, +${i} הידבקות.`});
+
+/* how you move in the world view */
+Object.assign(UI.en,{worldMode_walk:'Walk',worldMode_sneak:'Sneak',worldMode_run:'Run',worldModeTip:'Walk, sneak (quiet, slow) or run (fast, loud). Hold Shift to run and C to sneak.'});
+Object.assign(UI.he,{worldMode_walk:'הליכה',worldMode_sneak:'התגנבות',worldMode_run:'ריצה',worldModeTip:'הליכה, התגנבות (שקט ואיטי) או ריצה (מהיר ורועש). Shift לריצה ו־C להתגנבות.'});
 

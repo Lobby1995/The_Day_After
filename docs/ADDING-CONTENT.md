@@ -145,5 +145,11 @@ A place is a small map in `src/js/ui/world-scenes.js`, one character per tile: `
 
 ### Zombies
 
-`worldNew(id, country, {zombies, seed})` places one to three zombies on floor tiles far from the entrance and the question. They walk (`WZSPEED`, slower than you: `WSPEED`) straight at you, tile by tile, and each bites once (`zombieBite` in `engine/game.js`: 3 to 5 health, 5 infection, never lethal). They wait `WZDELAY` before they start and freeze when the question opens. How many there are depends on the outbreak (`world-ui.js`).
+`world-zombies.js`. A zombie is unaware of you until it sees you (`WSIGHT`: 3, 5 or 6 tiles in front of it, no walls in the way) or hears you (`WNOISE`: 1.5, 3 or 7 tiles, through walls), and how far depends on how you move (hold Shift to run, C to sneak, or use the button) and on your stealth stat (`worldPresence`). Its states: `idle` and `wander` (unaware), `investigate` (heard something: goes to where you were), `chase` (saw you), `search` (lost you: goes to where it last saw you, then wanders again) and `home` (after a bite). A zombie that starts a chase calls the ones near it. Speeds are in `WZS`; a chasing zombie is slower than you walking and faster than you sneaking, so running works and sneaking is for not being seen. Each zombie bites once (`zombieBite` in `engine/game.js`: 3 to 5 health, 5 infection, never lethal), and everything freezes when the question opens. The red `!` and yellow `?` over a zombie's head show what it is doing.
+
+`worldZombieCount(eventId, placeId, outbreak)` in `world-scenes.js` decides how many. None until the outbreak passes about 34%, then one more for every 14 points, up to 5; the first two scenes of the story stay clear unless the outbreak is already 80% or more; the place changes it (`WZ_PLACE`), quiet events have fewer (`WZ_CALM`), and events about zombies always have some (`WZ_EVENT`).
+
+### Big places
+
+Every place except the profession rooms, the homes, the cabin and the chapel also exists in a big version (`worldBig` in `world.js`): its inside is repeated and mirrored into a grid, you come in at the far corner, and the question stays where it was, so the way to it is long. The camera follows you (`worldCamera`), and an arrow at the edge of the picture points to the question when it is off screen. A place can override its size with `grow:[nx,ny]`.
 
