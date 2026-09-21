@@ -4,7 +4,7 @@
  * Renata runs its radio. Seu Osvaldo owns the only working well. Ze Cabo knows the tunnels.
  * The arc ends at the river, where a convoy of boats is leaving north.
  */
-const BR={arc:'loc:brazil',label:['Rooftops','הגגות'],of:6};
+const BR={arc:'loc:brazil',label:['Rooftops','הגגות'],of:6,rich:true};
 
 chapter(Object.assign({},BR,{id:'br_1',n:1,at:.06,
  t:['The Net','הרשת'],

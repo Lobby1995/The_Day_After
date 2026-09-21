@@ -80,7 +80,7 @@ chapter({ id: 'br_3', arc: 'loc:brazil', label: ['Rooftops', 'הגגות'], n: 3
 - Every outcome automatically carries a little food and water: a story turn replaces a scavenging turn, and without this the plot would starve the player.
 - `tests/story.test.js` checks that every arc plays in order on every road and that all text works with and without flags.
 
-Currently written: Brazil (6 chapters), Israel (6), the doctor (4), and one doctor-in-Brazil and one doctor-in-Israel chapter.
+Currently written: a six-chapter arc for every country (United States, Brazil, Britain, Japan, Canada, Israel, Australia), the doctor's four chapters, and one doctor-in-Brazil and one doctor-in-Israel chapter. Set `rich: true` on an arc's shared settings (as Brazil and the United States do) to give its chapters a little water as well as food; the harshest countries need it.
 
 ## The prologue (day one)
 

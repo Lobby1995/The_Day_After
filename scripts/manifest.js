@@ -23,6 +23,11 @@ module.exports={
     'js/content/story/engine.js',                 // story chapters: registry and scheduler
     'js/content/story/brazil.js',                 // country arc: Brazil, "Rooftops"
     'js/content/story/israel.js',                 // country arc: Israel, "The Shelter"
+    'js/content/story/usa.js',                 // country arc: the United States, "The Long Road"
+    'js/content/story/uk.js',                 // country arc: Britain, "The Cordon"
+    'js/content/story/japan.js',                 // country arc: Japan, "The Rulebook"
+    'js/content/story/canada.js',                 // country arc: Canada, "The Long Winter"
+    'js/content/story/australia.js',                 // country arc: Australia, "The Red Road"
     'js/content/story/doctor.js',                 // character arc: the doctor, plus doctor-in-country chapters
     'js/engine/risk.js',                          // turns "certain" options into gambles
     'js/engine/meta.js',                          // achievements and trophies (saved between runs)

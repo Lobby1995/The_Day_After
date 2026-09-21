@@ -21,13 +21,19 @@ function playRun(loc,bg,road){
   }
   return shown;
 }
+const arc=(pre,n=6)=>Array.from({length:n},(_,i)=>pre+(i+1));
 const COMBOS=[
-  ['brazil','doctor',['br_1','br_2','br_3','br_4','br_5','br_6','doc_1','doc_2','doc_3','doc_4','pair_doc_br']],
-  ['israel','doctor',['il_1','il_2','il_3','il_4','il_5','il_6','doc_1','doc_2','doc_3','doc_4','pair_doc_il']],
-  ['brazil','mechanic',['br_1','br_2','br_3','br_4','br_5','br_6']],
-  ['israel','student',['il_1','il_2','il_3','il_4','il_5','il_6']],
-  ['uk','doctor',['doc_1','doc_2','doc_3','doc_4']],
-  ['uk','mechanic',[]],
+  ['brazil','doctor',[...arc('br_'),...arc('doc_',4),'pair_doc_br']],
+  ['israel','doctor',[...arc('il_'),...arc('doc_',4),'pair_doc_il']],
+  ['brazil','mechanic',arc('br_')],
+  ['israel','student',arc('il_')],
+  ['uk','doctor',[...arc('uk_'),...arc('doc_',4)]],
+  ['uk','mechanic',arc('uk_')],
+  ['usa','mechanic',arc('us_')],
+  ['usa','doctor',[...arc('us_'),...arc('doc_',4)]],
+  ['japan','student',arc('jp_')],
+  ['canada','teacher',arc('ca_')],
+  ['australia','soldier',arc('au_')],
 ];
 [5,15,20].forEach(road=>{
   COMBOS.forEach(([loc,bg,want])=>{
@@ -36,7 +42,7 @@ const COMBOS=[
       const label=`${loc}/${bg} road ${road}`;
       if(got.slice().sort().join()!==want.slice().sort().join())bad(`${label}: expected ${want.length} chapters, got [${got.join(',')}]`);
       /* inside one arc the order is fixed */
-      ['br_','il_','doc_'].forEach(pre=>{
+      ['br_','il_','us_','uk_','jp_','ca_','au_','doc_'].forEach(pre=>{
         const seq=got.filter(x=>x.indexOf(pre)===0).map(x=>+x.split('_')[1]);
         if(seq.join()!==seq.slice().sort((a,b)=>a-b).join())bad(`${label}: ${pre} chapters out of order: ${seq}`);
       });
@@ -47,10 +53,15 @@ const COMBOS=[
 });
 
 /* every chapter's text works with and without the flags it reads, in both languages, and stays gender-neutral */
-const flagSets=[{},{br_net:1,br_osvaldo_deal:1,br_tunnels:1,br_seat_taken:1},{br_osvaldo_enemy:1,br_seat_given:1},{il_open:1,il_yoram_shared:1,il_power:1,il_group:1,doc_fair:1,doc_immune:1,il_quarantine:1},{il_rota:1,il_split:1,doc_paid:1,il_treated:1}];
+const flagsRead=ev=>{
+  const src=String(ev.text)+String(E.HEV[ev.id].x);
+  return [...new Set([...src.matchAll(/flag\('([a-z_0-9]+)'\)/g)].map(m=>m[1]))];
+};
 E.EVENTS.filter(e=>e.story).forEach(ev=>{
+  const names=flagsRead(ev);
+  const sets=[{},Object.fromEntries(names.map(n=>[n,1])),...names.map(n=>({[n]:1}))];
   ['uk','brazil','israel','japan','usa','canada','australia'].forEach(loc=>{
-    flagSets.forEach(fs=>{
+    sets.forEach(fs=>{
       E.newGame({name:'S',sex:'m',age:40,loc,bg:'doctor',road:5,skin:0});
       Object.assign(E.G.flags,fs);
       try{
@@ -58,10 +69,15 @@ E.EVENTS.filter(e=>e.story).forEach(ev=>{
         if(typeof en!=='string'||en.length<40)bad(ev.id+' English text is empty');
         if(typeof he!=='string'||he.length<40)bad(ev.id+' Hebrew text is empty');
         if(/(^|[^א-ת])אתה([^א-ת]|$)/.test(he))bad(ev.id+' Hebrew uses gendered "אתה"');
-        if(/undefined|\[object/.test(en+he))bad(ev.id+' text contains a broken value');
+        if(/undefined|\[object|\s{2,}\./.test(en+he))bad(ev.id+' text contains a broken value');
       }catch(e){bad(ev.id+' text threw: '+e.message);}
     });
   });
+});
+/* the words of the outcomes too: no gendered "אתה", no leftovers */
+E.EVENTS.filter(e=>e.story).forEach(ev=>{
+  const h=JSON.stringify(E.HEV[ev.id].c);
+  if(/(^|[^א-ת])אתה([^א-ת]|$)/.test(h))bad(ev.id+' a Hebrew choice or outcome uses "אתה"');
 });
 
 if(problems.length){console.log(problems.slice(0,25).join('\n'));console.log(`\n${problems.length} problem(s)`);process.exit(1);}

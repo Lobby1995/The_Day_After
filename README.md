@@ -14,7 +14,7 @@ Pick a country, a past and an age, then decide how to live through the end of th
 - A living world: outbreak, order and your own humanity shift with your choices
 - Companions with roles, loyalty, personal stories, and bonds
 - Early choices come back later as echoes
-- A plot: story chapters at fixed points of the road. Currently Brazil, Israel and the doctor have their own arcs, and earlier choices change later chapters
+- A plot: story chapters at fixed points of the road. Every country has its own six-chapter arc with its own characters, the doctor has one too, and earlier choices change later chapters
 - 50 achievements and 50 trophies, saved between runs
 
 ## Run it locally

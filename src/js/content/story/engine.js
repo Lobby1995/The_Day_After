@@ -10,7 +10,7 @@ function chapter(o){
   const num=o.of?` ${o.n}/${o.of}`:'';
   /* a story turn replaces a scavenging turn, so every outcome carries a little food and water:
      the people around you share what they have. without this the plot would starve the player. */
-  o.ch.forEach(c=>{[c.win,c.lose].forEach((r,k)=>{const fx=r[2];fx.food=(fx.food||0)+1;if(k===0)fx.water=(fx.water||0)+1;});});
+  o.ch.forEach(c=>{[c.win,c.lose].forEach((r,k)=>{const fx=r[2];if(k===0){fx.food=(fx.food||0)+1;if(o.rich)fx.water=(fx.water||0)+1;}else if(o.rich)fx.food=(fx.food||0)+1;});});
   defEv(Object.assign({},o,{
     t:[`${o.label[0]}${num} \u00b7 ${o.t[0]}`,`${o.label[1]}${num} \u00b7 ${o.t[1]}`],
     story:true,once:true,cond:undefined
