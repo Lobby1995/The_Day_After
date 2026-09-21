@@ -37,3 +37,7 @@ function dueChapter(){
 }
 /* helper for chapter text that depends on what the player did earlier */
 const flag=n=>!!(G.flags&&G.flags[n]);
+
+/* the age line and the country line that open a character's first chapter: [en, he] by band, and by country */
+const ageAt=(lines,l)=>lines[ageBand()][l];
+const signAt=l=>PRO_SIGN[G.p.loc][l];

@@ -80,7 +80,7 @@ chapter({ id: 'br_3', arc: 'loc:brazil', label: ['Rooftops', 'הגגות'], n: 3
 - Every outcome automatically carries a little food and water: a story turn replaces a scavenging turn, and without this the plot would starve the player.
 - `tests/story.test.js` checks that every arc plays in order on every road and that all text works with and without flags.
 
-Currently written: a six-chapter arc for every country (United States, Brazil, Britain, Japan, Canada, Israel, Australia), the doctor's four chapters, and one doctor-in-Brazil and one doctor-in-Israel chapter. Set `rich: true` on an arc's shared settings (as Brazil and the United States do) to give its chapters a little water as well as food; the harshest countries need it.
+Currently written: a six-chapter arc for every country (United States, Brazil, Britain, Japan, Canada, Israel, Australia), a four-chapter arc for every profession (student, teacher, soldier, doctor, politician, journalist, firefighter, mechanic), and one doctor-in-Brazil and one doctor-in-Israel chapter. Set `rich: true` on an arc's shared settings (as Brazil and the United States do) to give its chapters a little water as well as food; the harshest countries need it. In a character arc, `ageAt(lines, l)` and `signAt(l)` (see `story/engine.js`) add a line that depends on the player's age and country.
 
 ## The prologue (day one)
 
@@ -91,4 +91,23 @@ Day one is three scenes with no night between them, in `src/js/content/prologue.
 3. `open_<country>` : the country's own night (in `events/base.js`), now with a one-line bridge in front of it that depends on the profession.
 
 To add a profession scene, write another `beat({...})` with a scene, three age lines, and two gambles. Set flags in the choices; later chapters can read them. `tests/prologue.test.js` checks that every profession, country and age band gets a different opening.
+
+## A dilemma (a choice with a price, and no dice)
+
+Some questions are not a gamble. Both options are certain, and the cost is in the words. Use `dil({...})` in `src/js/content/dilemmas.js`:
+
+```js
+dil({id:'dil_cache', cond:()=>G.w.day>=T(3), w:45,
+  t:['The Boot of the Car','תא המטען'],
+  x:['A rifle, or a crate of water...','רובה, או ארגז מים...'],
+  ch:[
+   {l:['Take the rifle','לקחת את הרובה'], s:['Six rounds, and everyone will see it.','...'],
+    out:['You leave the water where it is.','...',{ammo:3, flag:'dil_armed'}]},
+   {l:['Take the water','לקחת את המים'], s:[...], out:[...,{water:5, flag:'dil_hydrated'}]}
+  ]});
+```
+
+- Every dilemma choice must set a **flag**, or it would leave no trace. `tests/dilemmas.test.js` checks this.
+- **A flag can change later odds.** Add it to `FLAG_MODS` in `engine/game.js`: `dil_armed:{strength:1,charisma:-1}` means that from then on, strength rolls are one step easier and charisma rolls one step harder. The player sees "a choice you made earlier" among what tips a roll.
+- **A flag can bring news later.** Write a follow-up event with `cond:()=>since('dil_armed',6)` (it arrives six scaled turns after the choice). A follow-up can say something the player did not know when they chose, like the one where the person you saved reveals that the other was their sibling (`echo_dil_two`).
 

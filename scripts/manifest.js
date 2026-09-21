@@ -19,6 +19,7 @@ module.exports={
     'js/content/events/country.js',               // events that belong to one country only
     'js/content/events/companions.js',            // one personal story per companion
     'js/content/events/echoes.js',                // early choices coming back later
+    'js/content/dilemmas.js',                     // choices with a price and no dice, and what they cost later
     'js/content/prologue.js',                    // day one: three scenes before the first night
     'js/content/story/engine.js',                 // story chapters: registry and scheduler
     'js/content/story/brazil.js',                 // country arc: Brazil, "Rooftops"
@@ -29,6 +30,13 @@ module.exports={
     'js/content/story/canada.js',                 // country arc: Canada, "The Long Winter"
     'js/content/story/australia.js',                 // country arc: Australia, "The Red Road"
     'js/content/story/doctor.js',                 // character arc: the doctor, plus doctor-in-country chapters
+    'js/content/story/student.js',                 // character arc: the student, "The Group Chat"
+    'js/content/story/teacher.js',                 // character arc: the teacher, "The Register"
+    'js/content/story/soldier.js',                 // character arc: the soldier, "The Order"
+    'js/content/story/politician.js',                 // character arc: the politician, "The Mandate"
+    'js/content/story/journalist.js',                 // character arc: the journalist, "The Record"
+    'js/content/story/firefighter.js',                 // character arc: the firefighter, "The Line"
+    'js/content/story/mechanic.js',                 // character arc: the mechanic, "The Machine"
     'js/engine/risk.js',                          // turns "certain" options into gambles
     'js/engine/meta.js',                          // achievements and trophies (saved between runs)
     'js/engine/game.js',                          // newGame, pickEvent, chance, choose, advanceDay

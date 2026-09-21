@@ -10,11 +10,12 @@ Pick a country, a past and an age, then decide how to live through the end of th
 - 7 countries that start at different points of the collapse, each with events that never appear anywhere else
 - 8 backgrounds (doctor, soldier, mechanic...), age and skin variants, pixel-art portraits drawn in code
 - 3 roads: 5, 15 or 20 years (about 20, 36 or 48 decisions)
+- Dilemmas: choices with a price and no dice, remembered later, sometimes with news the player did not have when they chose
 - A prologue on day one: three scenes that change with your profession, your age and your country
 - A living world: outbreak, order and your own humanity shift with your choices
 - Companions with roles, loyalty, personal stories, and bonds
 - Early choices come back later as echoes
-- A plot: story chapters at fixed points of the road. Every country has its own six-chapter arc with its own characters, the doctor has one too, and earlier choices change later chapters
+- A plot: story chapters at fixed points of the road. Every country has its own six-chapter arc with its own characters, every profession has its own four-chapter arc, and earlier choices change later chapters
 - 50 achievements and 50 trophies, saved between runs
 
 ## Run it locally

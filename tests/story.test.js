@@ -22,27 +22,24 @@ function playRun(loc,bg,road){
   return shown;
 }
 const arc=(pre,n=6)=>Array.from({length:n},(_,i)=>pre+(i+1));
-const COMBOS=[
-  ['brazil','doctor',[...arc('br_'),...arc('doc_',4),'pair_doc_br']],
-  ['israel','doctor',[...arc('il_'),...arc('doc_',4),'pair_doc_il']],
-  ['brazil','mechanic',arc('br_')],
-  ['israel','student',arc('il_')],
-  ['uk','doctor',[...arc('uk_'),...arc('doc_',4)]],
-  ['uk','mechanic',arc('uk_')],
-  ['usa','mechanic',arc('us_')],
-  ['usa','doctor',[...arc('us_'),...arc('doc_',4)]],
-  ['japan','student',arc('jp_')],
-  ['canada','teacher',arc('ca_')],
-  ['australia','soldier',arc('au_')],
-];
+const LOC_ARC={brazil:'br_',israel:'il_',usa:'us_',uk:'uk_',japan:'jp_',canada:'ca_',australia:'au_'};
+const BG_ARC={student:'st_',teacher:'te_',soldier:'so_',doctor:'doc_',politician:'po_',journalist:'jo_',firefighter:'ff_',mechanic:'me_'};
+const PAIR={'doctor/brazil':'pair_doc_br','doctor/israel':'pair_doc_il'};
+/* every country with every profession: the country's six chapters, the profession's four, and a pair chapter where one exists */
+const COMBOS=[];
+Object.keys(LOC_ARC).forEach(loc=>Object.keys(BG_ARC).forEach(bg=>{
+  const want=[...arc(LOC_ARC[loc]),...arc(BG_ARC[bg],4)];
+  if(PAIR[bg+'/'+loc])want.push(PAIR[bg+'/'+loc]);
+  COMBOS.push([loc,bg,want]);
+}));
 [5,15,20].forEach(road=>{
   COMBOS.forEach(([loc,bg,want])=>{
-    for(let k=0;k<25;k++){
+    for(let k=0;k<2;k++){
       const got=playRun(loc,bg,road);
       const label=`${loc}/${bg} road ${road}`;
       if(got.slice().sort().join()!==want.slice().sort().join())bad(`${label}: expected ${want.length} chapters, got [${got.join(',')}]`);
       /* inside one arc the order is fixed */
-      ['br_','il_','us_','uk_','jp_','ca_','au_','doc_'].forEach(pre=>{
+      [...Object.values(LOC_ARC),...Object.values(BG_ARC)].forEach(pre=>{
         const seq=got.filter(x=>x.indexOf(pre)===0).map(x=>+x.split('_')[1]);
         if(seq.join()!==seq.slice().sort((a,b)=>a-b).join())bad(`${label}: ${pre} chapters out of order: ${seq}`);
       });

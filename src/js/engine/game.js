@@ -113,6 +113,15 @@ function startTurn(){
   save();
 }
 
+/* choices made earlier that shift the odds of later ones, by the stat being tested. keys are flags. */
+const FLAG_MODS={
+  dil_armed:{strength:1,charisma:-1},   // took the rifle: harder to beat, harder to trust
+  dil_hydrated:{stamina:1},             // took the water: goes further
+  dil_dark:{stealth:1},                 // kept the dark: learned to be unseen
+  dil_boy:{charisma:1},                 // gave the dose to the child: people trust a face like that
+  dil_pharmacist:{wits:1},              // kept the one who knew: a map, and a way of thinking
+  dil_delivered:{charisma:1}            // kept a promise to a stranger
+};
 /* the odds of the good outcome. parts describe what tipped it, for the "in your favor / against you" line */
 function chance(ch){
   const c=ch.check;
@@ -135,6 +144,8 @@ function chance(ch){
   if(F.map&&(c.stat==='stamina'||c.stat==='stealth')){val+=1;parts.push(['gear',1]);}
   if(F.filter&&c.water){val+=2;parts.push(['gear',2]);}
   if(F.nomad&&c.stat==='stamina'){val+=1;parts.push(['gear',1]);}
+  /* what you chose earlier changes what you are good at now */
+  for(const f in FLAG_MODS){const d=FLAG_MODS[f][c.stat];if(F[f]&&d){val+=d;parts.push(['past',d]);}}
   const M=G.p.marks;
   if(M.indexOf('limp')>=0&&(c.stat==='stamina'||c.stat==='stealth')){val-=1;parts.push(['limp',-1]);}
   if(M.indexOf('scarred')>=0&&c.stat==='charisma'){val-=1;parts.push(['scarred',-1]);}
@@ -168,6 +179,7 @@ function edgeKeys(c){
     else if(k==='noise')add_(neg,'noise');
     else if(k==='years')add_(neg,'years');
     else if(k==='order')add_(v>0?pos:neg,'order');
+    else if(k==='past')add_(v>0?pos:neg,'past');
   });
   return{pos,neg};
 }

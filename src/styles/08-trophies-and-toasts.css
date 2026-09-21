@@ -28,3 +28,4 @@
 .toast span{display:block;color:var(--muted);font-size:.82rem}
 .toast.out{opacity:0;transform:translateY(8px)}
 @media(max-width:560px){.tfacts{grid-template-columns:1fr 1fr 1fr}.tfacts .fact b{font-size:1.4rem}}
+.pill.dil{background:transparent;color:var(--accent);border-color:var(--accent)}

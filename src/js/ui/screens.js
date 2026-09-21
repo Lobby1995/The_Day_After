@@ -321,6 +321,7 @@ function renderStage(){
 function choiceHtml(view,ci,pos){
   const ch=view.choices[ci],a=avail(ch),tc=vChoice(ci);
   const pills=[];
+  if(EVMAP[G.cur.id]&&EVMAP[G.cur.id].dil)pills.push(`<span class="pill dil">${t('dilPill')}</span>`);
   if(ch.tag)pills.push(`<span class="pill">${ch.tag.map(b=>bgN(b,'m')).join(' / ')}</span>`);
   if(ch.cost)for(const k in ch.cost)pills.push(`<span class="pill o">${t('costs',ch.cost[k],supN(k))}</span>`);
   if(!a.ok)pills.push(`<span class="pill o">${esc(whyText(a.why))}</span>`);

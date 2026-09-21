@@ -56,7 +56,7 @@ en:{
  facts:{years:'Years survived',dec:'Decisions made',age:'Age at the end',group:'Still with you',out:'Outbreak',ord:'Order',hum:'Humanity'},
  legacyH:'What you left behind',everyH:'Full Field Record',newSurvivor:'New survivor',retry:n=>`Try ${n} again`,
  rolling:'Rolling…',skip:'Skip',edgePos:'In your favor: ',edgeNeg:'Against you: ',andW:' and ',
- edge:{training:'your training',group:'your group',gear:'your gear',rep:'your reputation',situation:'the situation',outbreak:'the outbreak',marks:'old injuries',state:'your condition',noise:'the noise of the group',years:'the long road'},
+ edge:{training:'your training',group:'your group',gear:'your gear',rep:'your reputation',situation:'the situation',outbreak:'the outbreak',marks:'old injuries',state:'your condition',noise:'the noise of the group',years:'the long road',past:'a choice you made earlier'},
  nothingChanges:'Nothing changes.',loyalty:'Loyalty',
  roles:{medic:['Medicine','Heals you +2 health every turn.'],cook:['Cooking','Stretches the food: sometimes +1 food.'],hunter:['Hunting','Sometimes brings back food.'],scout:['Scouting','Sometimes finds water. Cancels group noise when sneaking.'],tech:['Repairs','Sometimes scrounges ammo. Helps with clever solutions.'],leader:['Leadership','+1 morale every turn. Helps in talks.'],fighter:['Fighting','Helps in fights.'],driver:['Driving','Helps when running.'],kin:['Family','Lifts your morale, but needs protecting.']},
  flagChip:{base:'You claim a base',nomad:'You take to the road',leader:'You lead the group',raiderAlly:'You ride with the gang',raiderEnemy:'The gang wants you dead',settled:'You are inside the walls',garden:'A garden is growing',rifle:'You now carry a rifle',filter:'You now have a water filter',map:'You now have a map',cure:'The cure is spreading'},
@@ -104,7 +104,7 @@ he:{
  facts:{years:'שנות הישרדות',dec:'החלטות שהתקבלו',age:'גיל בסוף',group:'עדיין איתך',out:'מגפה',ord:'סדר',hum:'אנושיות'},
  legacyH:'מה שהשארת מאחור',everyH:'רישום שטח מלא',newSurvivor:'ניצול חדש',retry:n=>`לנסות שוב עם ${n}`,
  rolling:'מגלגלים...',skip:'לדלג',edgePos:'לטובתך: ',edgeNeg:'נגדך: ',andW:' ו',
- edge:{training:'ההכשרה שלך',group:'הקבוצה',gear:'הציוד',rep:'המוניטין',situation:'המצב',outbreak:'המגפה',marks:'פציעות ישנות',state:'המצב שלך',noise:'רעש הקבוצה',years:'הדרך הארוכה'},
+ edge:{training:'ההכשרה שלך',group:'הקבוצה',gear:'הציוד',rep:'המוניטין',situation:'המצב',outbreak:'המגפה',marks:'פציעות ישנות',state:'המצב שלך',noise:'רעש הקבוצה',years:'הדרך הארוכה',past:'בחירה קודמת'},
  nothingChanges:'שום דבר לא משתנה.',loyalty:'נאמנות',
  roles:{medic:['רפואה','מרפא אותך +2 בריאות בכל תור.'],cook:['בישול','מותח את האוכל: לפעמים +1 אוכל.'],hunter:['ציד','לפעמים מביא אוכל.'],scout:['סיור','לפעמים מוצא מים. מבטל את רעש הקבוצה בהתגנבות.'],tech:['תיקונים','לפעמים מוצא תחמושת. עוזר בפתרונות מתוחכמים.'],leader:['מנהיגות','+1 מורל בכל תור. עוזר בשיחות.'],fighter:['לחימה','עוזר בקרבות.'],driver:['נהיגה','עוזר בבריחה.'],kin:['משפחה','מעלה את המורל, אבל צריך הגנה.']},
  flagChip:{base:'תפסת בסיס',nomad:'יצאת לדרך',leader:'לקחת הובלה',raiderAlly:'הצטרפת לכנופיה',raiderEnemy:'הכנופיה רוצה בנפילתך',settled:'נכנסת מאחורי החומות',garden:'גינה גדלה',rifle:'עכשיו יש רובה',filter:'עכשיו יש מסנן מים',map:'עכשיו יש מפה',cure:'התרופה מתפשטת'},
@@ -144,4 +144,8 @@ Object.assign(UI.en,{sWho:'Who you are',sWhere:'Where',sPast:'Your past',sReady:
   stepOf:(a,b)=>`Step ${a} of ${b}`,prologue:(n,m)=>`Prologue ${n}/${m}`,sReadyH:'Your survivor',sReadyP:'This is who starts the end of the world. You can still change anything.'});
 Object.assign(UI.he,{sWho:'הדמות',sWhere:'המקום',sPast:'העבר',sReady:'מוכנים',next:'הבא',back:'חזרה',change:'שינוי',
   stepOf:(a,b)=>`שלב ${a} מתוך ${b}`,prologue:(n,m)=>`פרולוג ${n}/${m}`,sReadyH:'הניצול',sReadyP:'זה מי שמתחיל את סוף העולם. אפשר עדיין לשנות הכול.'});
+
+/* dilemmas: choices with a price and no dice */
+Object.assign(UI.en,{dilPill:'A choice, not a chance'});
+Object.assign(UI.he,{dilPill:'בחירה, לא הימור'});
 

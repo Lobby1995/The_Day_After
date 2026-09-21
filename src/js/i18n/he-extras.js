@@ -75,3 +75,8 @@ applyHeTwists();
 
 /* put the bridge in front of every country opener now that its Hebrew exists */
 dressOpeners();
+
+/* names of people who join through dilemmas */
+HE.people.Shani={n:'שני',t:`ניצולה מהחנות`,f:1};
+HE.people.Tomer={n:'תומר',t:`ניצול מהחנות`};
+
